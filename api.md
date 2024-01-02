@@ -46,6 +46,8 @@
 <dd></dd>
 <dt><a href="#Direzione.FightReceiver">Direzione.FightReceiver</a> : <code>object</code></dt>
 <dd></dd>
+<dt><a href="#Direzione.Utils">Direzione.Utils</a> : <code>object</code></dt>
+<dd></dd>
 <dt><a href="#Direzione.Repertoire">Direzione.Repertoire</a> : <code>object</code></dt>
 <dd></dd>
 <dt><a href="#Direzione.Scoreboard">Direzione.Scoreboard</a> : <code>object</code></dt>
@@ -1286,6 +1288,30 @@ Creates an object to receive scoreboard events from a emitter scoreboard.
 | --- | --- |
 | receiverID | <code>String</code> |
 | viewConfig | <code>Object</code> |
+
+
+* * *
+
+<a name="Direzione.Utils"></a>
+
+## Direzione.Utils : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.Utils.loadTranslationJS"></a>
+
+### Direzione.Utils.loadTranslationJS(path, callback) ⇒ <code>String</code>
+Loads a JS-file from a given path and passes the so (hopefully) loaded
+member variable "Direzione.translation" to the given callback-function
+
+**Kind**: static method of [<code>Direzione.Utils</code>](#Direzione.Utils)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| path | <code>String</code> |
+| callback | <code>function</code> |
 
 
 * * *

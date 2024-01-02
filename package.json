@@ -1,7 +1,7 @@
 {
   "name": "direzione-lib",
   "title": "Direzione Library",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "A library of components that can be used to manage a martial arts tournament and has the abillity to control a scoreboard from a referee table.",
   "repository": {
     "type": "git",
