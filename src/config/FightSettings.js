@@ -50,7 +50,23 @@
 
     FightSettings.prototype = {
         toStorage:   _toStorage,
-        fromStorage: _fromStorage
+        fromStorage: _fromStorage,
+        getDuration: function () { return this.duration },
+        getCountUpLimit: function () { return this.countUpLimit },
+        setDuration: function (duration) {
+            if (! Number.isInteger(duration)) {
+                throw TypeError('Duration has to be of type integer')
+            }
+            this.duration = duration
+            return this
+        },
+        setCountUpLimit: function (countUpLimit) {
+            if (! Number.isInteger(countUpLimit)) {
+                throw TypeError('Limit for count up has to be of type integer')
+            }
+            this.countUpLimit = countUpLimit
+            return this
+        }
     }
 
     /**

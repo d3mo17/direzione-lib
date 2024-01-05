@@ -55,7 +55,7 @@
      * @borrows <anonymous>~_toketa as toketa
      */
     function Fight(settings, whiteOpponent, redOpponent) {
-        this[' settings']    = settings
+        this[' settings']      = settings
         this[' whiteOpponent'] = whiteOpponent
         this[' redOpponent']   = redOpponent
 
@@ -193,7 +193,7 @@
      * @returns {Integer}
      */
     function _getTimeLeft() {
-        return _countdownExists.call(this) ? this[' countdown'].get() : this[' settings'].duration
+        return _countdownExists.call(this) ? this[' countdown'].get() : this[' settings'].getDuration()
     }
 
     /**
@@ -297,7 +297,7 @@
      * @param   {Integer} forceMS Optional milliseconds the start of countdown should be set to
      */
     function _newCountDown(forceMS) {
-        var local_ms = typeof forceMS !== 'undefined' ? forceMS : this[' settings'].duration
+        var local_ms = typeof forceMS !== 'undefined' ? forceMS : this[' settings'].getDuration()
         _countdownExists.call(this) && this[' countdown'].stop('dirty')
         this[' countdown'] = Durata.create(local_ms, 0, local_ms).on('resume', _removeCountUp.bind(this))
 
@@ -349,8 +349,9 @@
      * @param   {Integer} forceMS Optional milliseconds the start of count up should be set to
      */
     function _newCountUp(side, forceMS) {
-        var local_ms = forceMS || 0
-        var to = typeof forceMS !== 'undefined' ? Fight.COUNTUP * 2 : Fight.COUNTUP
+        var local_ms   = forceMS || 0
+        var countUp_ms = this[' settings'].getCountUpLimit()
+        var to = typeof forceMS !== 'undefined' ? countUp_ms * 2 : countUp_ms
         _countUpExists.call(this) && this[' countup'].stop('dirty')
         this[' countup'] = Durata.create(local_ms, to, to - local_ms)
         this[' countup'].side = side
@@ -366,7 +367,7 @@
                 _stop.call(this)
             } else {
                 this[' countup'].stop('replace')
-                _newCountUp.call(this, this[' countup'].side, Fight.COUNTUP)
+                _newCountUp.call(this, this[' countup'].side, countUp_ms)
                 this[' countup'].on('pause', function () {
                     _dispatch.call(this, 'toketa', this[' countup'].get())
                 }.bind(this)).on('complete', _stop.bind(this))
