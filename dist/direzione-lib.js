@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.11.0
+ * Direzione Library v0.11.1
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -478,13 +478,15 @@
             _dispatch.call(this, 'toketa', this[' countup'].get())
         }.bind(this)).on('complete', function () {
             if (this[' ' + this[' countup'].side + 'Opponent'].getScore() !== 0) {
-                _stop.call(this)
+                ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
             } else {
                 this[' countup'].stop('replace')
                 _newCountUp.call(this, this[' countup'].side, countUp_ms)
                 this[' countup'].on('pause', function () {
                     _dispatch.call(this, 'toketa', this[' countup'].get())
-                }.bind(this)).on('complete', _stop.bind(this))
+                }.bind(this)).on('complete', function () {
+                    ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
+                }.bind(this))
             }
         }.bind(this))
     }
