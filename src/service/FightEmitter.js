@@ -44,12 +44,16 @@
      *
      * @param   {String}  receiverID
      * @param   {Fight}   fight
+     * @param   {Array}   servers
      *
      * @borrows <anonymous>~_connect as connect
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightEmitter(receiverID, fight) {
-        this[' localPeer']  = new peerjs.Peer()
+    function FightEmitter(receiverID, fight, servers) {
+        var servers = servers || []
+        var options = {config: {iceServers: servers}}
+
+        this[' localPeer']  = new peerjs.Peer(servers.length < 1 ? undefined : options)
         this[' fight']      = fight
         this[' receiverID'] = receiverID
         this[' connected']  = false
@@ -65,6 +69,9 @@
             return this[' connected']
         },
         on: _registerEventListener,
+        getFight: function () {
+            return this[' fight']
+        },
         replaceFight: function (fight) {
             this.disconnect()
             this[' fight'].clearListeners()
@@ -83,6 +90,13 @@
      * @method  FightEmitter#isConnected
      * @public
      * @returns {Boolean}
+     */
+
+    /**
+     * Returns the fight
+     *
+     * @method FightEmitter#getFight
+     * @public
      */
 
     /**

@@ -135,6 +135,7 @@
             node[' next']            = this[' cursor'][' next']
             this[' cursor'][' next'] = node
             node[' prev']            = this[' cursor']
+            this[' cursor']          = node
         }
         this[' length']++;
         this[' eof'] = false;

@@ -142,6 +142,7 @@
             _dispatch.call(this, 'reset')
             this[' score'] = 0
             this[' penalty'] = 0
+            this.getPerson().reset()
         }
     }
 

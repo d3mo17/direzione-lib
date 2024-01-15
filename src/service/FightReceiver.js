@@ -65,11 +65,15 @@
      *
      * @param   {String} receiverID
      * @param   {Object} viewConfig
+     * @param   {Array}  servers
      *
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightReceiver(receiverID, viewConfig) {
-        this[' localPeer']     = new peerjs.Peer(receiverID)
+    function FightReceiver(receiverID, viewConfig, servers) {
+        var servers = servers || []
+        var options = {config: {iceServers: servers}}
+
+        this[' localPeer']     = new peerjs.Peer(receiverID, servers.length < 1 ? undefined : options)
         this[' receiverID']    = receiverID
         this[' connected']     = false
         this[' conn']          = false

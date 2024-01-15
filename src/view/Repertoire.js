@@ -25,14 +25,14 @@
 /** @namespace "Direzione.Repertoire" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['direzione-lib/model/Playlist'], factory)
+        define(['direzione-lib/model/Playlist', 'direzione-lib/util/Utils'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Playlist'))
+        module.exports = factory(require('../model/Playlist'), require('../util/Utils'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.Repertoire = factory(root.Direzione.Playlist)
+        root.Direzione.Repertoire = factory(root.Direzione.Playlist, root.Direzione.Utils)
     }
-}(this, function (Playlist) {
+}(this, function (Playlist, Utils) {
 
     /**
      * @class
@@ -47,14 +47,43 @@
      * @borrows <anonymous>~_registerEventListener as on
      */
     function Repertoire(playlistModel, viewConfig) {
-        this[' playlist']     = playlistModel
-        this[' entryJig']     = viewConfig.entryJigElem.cloneNode(true)
-        this[' entryWrapper'] = viewConfig.entryWrapperElem
+        this[' playlist']        = playlistModel
+        this[' entryJig']        = viewConfig.entryJigElem.cloneNode(true)
+        this[' entryWrapper']    = viewConfig.entryWrapperElem
+        this[' cssWhiteName']    = viewConfig.selectorWhiteOpponentName || '.white'
+        this[' cssRedName']      = viewConfig.selectorRedOpponentName   || '.red'
+        this[' cssWhiteLockOut'] = viewConfig.selectorWhiteOpponentLockOut
+        this[' cssRedLockOut']   = viewConfig.selectorRedOpponentLockOut
 
         viewConfig.entryJigElem.remove();
 
         this[' entryJig'].removeAttribute('id')
         _makeListVisual.call(this)
+        _animationLoop.call(this)
+    }
+
+    /**
+     * @private
+     */
+    function _animationLoop() {
+        this[' entryWrapper'].querySelectorAll('li').forEach(function (entry) {
+            if (typeof entry.fight === 'undefined') return
+
+            var lockOutWhite = entry.fight.getWhiteOpponent().getPerson().getLockOut()
+            var lockOutRed   = entry.fight.getRedOpponent().getPerson().getLockOut()
+            var loWhiteElem  = entry.querySelector(this[' cssWhiteLockOut'])
+            var loRedElem    = entry.querySelector(this[' cssRedLockOut'])
+
+            if (loWhiteElem) {
+                loWhiteElem.innerText = (! lockOutWhite || lockOutWhite.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutWhite.get())
+            }
+            if (loRedElem) {
+                loRedElem.innerText = (! lockOutRed || lockOutRed.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutRed.get())
+            }
+        }.bind(this))
+        requestAnimationFrame(_animationLoop.bind(this))
     }
 
     /**
@@ -66,8 +95,8 @@
         while (fight = this[' playlist'].next()) {
             entry = this[' entryJig'].cloneNode(true)
             entry.fight = fight
-            entry.querySelector(".white").innerText = fight.getWhiteOpponent().getFullName()
-            entry.querySelector(".red").innerText   = fight.getRedOpponent().getFullName()
+            entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
+            entry.querySelector(this[' cssRedName']).innerText   = fight.getRedOpponent().getFullName()
 
             this[' entryWrapper'].appendChild(entry)
         }

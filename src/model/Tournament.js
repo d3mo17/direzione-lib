@@ -34,7 +34,8 @@
             'direzione-lib/service/FightEmitter',
             'direzione-lib/service/FightReceiver',
             'direzione-lib/model/Playlist',
-            'direzione-lib/view/Repertoire'
+            'direzione-lib/view/Repertoire',
+            'direzione-lib/util/Utils'
         ],factory)
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory(
@@ -47,7 +48,8 @@
             require('../service/FightEmitter'),
             require('../service/FightReceiver'),
             require('./Playlist'),
-            require('../view/Repertoire')
+            require('../view/Repertoire'),
+            require('../util/Utils')
         )
     } else {
         root.Direzione = factory(
@@ -60,7 +62,8 @@
             root.Direzione.FightEmitter,
             root.Direzione.FightReceiver,
             root.Direzione.Playlist,
-            root.Direzione.Repertoire
+            root.Direzione.Repertoire,
+            root.Direzione.Utils
         )
     }
 }(this, function (
@@ -73,7 +76,8 @@
     FightEmitter,
     FightReceiver,
     Playlist,
-    Repertoire
+    Repertoire,
+    Utils
 ) {
     // Module-API
     return {
@@ -86,6 +90,7 @@
         FightEmitter:  FightEmitter,
         FightReceiver: FightReceiver,
         Playlist:      Playlist,
-        Repertoire:    Repertoire
+        Repertoire:    Repertoire,
+        Utils:         Utils
     }
 }))

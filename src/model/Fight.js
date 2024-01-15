@@ -80,6 +80,13 @@
      */
     Fight.COUNTUP = 10 * 1000 // ms
 
+    /**
+     * Lock-out of persons after a fight (in milliseconds)
+     * @readonly
+     * @const {number}
+     */
+    Fight.LOCK_OUT = 10 * 60 * 1000 // ms
+
     Fight.SIDE_WHITE = 'white'
     Fight.SIDE_RED = 'red'
     Fight.SIDE_CENTER = 'center'
@@ -432,6 +439,9 @@
         // fight is controlled from the outside were the logic happens
         if (typeof msDownForce !== 'undefined') return
 
+        this[' whiteOpponent'].getPerson().setLockOut(this[' settings'].getLockOutTime())
+        this[' redOpponent'].getPerson().setLockOut(this[' settings'].getLockOutTime())
+
         _dispatch.call(
             this, 'stop', [
                 this[' countdown'].get(),
@@ -522,6 +532,7 @@
         // Constants to make accessable:
         DURATION: Fight.DURATION,
         COUNTUP: Fight.COUNTUP,
+        LOCK_OUT: Fight.LOCK_OUT,
         SIDE_WHITE: Fight.SIDE_WHITE,
         SIDE_RED: Fight.SIDE_RED,
         SIDE_CENTER: Fight.SIDE_CENTER

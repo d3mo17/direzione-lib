@@ -58,8 +58,21 @@
         document.head.appendChild(script);
     }
 
+    /**
+     * Returns converted milliseconds as string showing minutes and seconds
+     *
+     * @private
+     * @param   {Integer} timeLeft_msec
+     * @returns {String}
+     */
+    function getMinSecDisplay(timeLeft_msec) {
+        var timeLeft_sec  = Math.ceil(timeLeft_msec / 1000)
+        return (Math.floor(timeLeft_sec/60) + ':' + ((timeLeft_sec%60)+'').padStart(2,'0'))
+    }
+
     // Module-API
     return {
-        loadTranslationJS: loadTranslationJS
+        loadTranslationJS: loadTranslationJS,
+        getMinSecDisplay:  getMinSecDisplay
     }
 }))

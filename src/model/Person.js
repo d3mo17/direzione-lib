@@ -58,6 +58,17 @@
         },
         getLastName: function () {
             return this[' lastName']
+        },
+        setLockOut: function (ms) {
+            this.reset()
+            this[' lockout'] = Durata.create(ms, 0, ms)
+        },
+        getLockOut: function () {
+            return typeof this[' lockout'] === 'undefined' ? false : this[' lockout']
+        },
+        reset: function () {
+            (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
+            delete this[' lockout']
         }
     }
 
@@ -83,6 +94,29 @@
      * @method  Person#getLastName
      * @public
      * @returns {String}
+     */
+
+    /**
+     * Sets persons lock-out time in milliseconds
+     *
+     * @method  Person#getLockOut
+     * @param   {Integer} ms
+     * @public
+     */
+
+    /**
+     * Returns the lock-out, if set
+     *
+     * @method  Person#getLockOut
+     * @public
+     * @returns {false|Durata}
+     */
+
+    /**
+     * Resets the lock-out
+     *
+     * @method  Person#reset
+     * @public
      */
 
     // Module-API

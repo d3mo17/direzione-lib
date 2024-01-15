@@ -632,6 +632,9 @@ Will be fired when score has been reset
     * [.getClubName()](#Person+getClubName) ⇒ <code>String</code>
     * [.getFirstName()](#Person+getFirstName) ⇒ <code>String</code>
     * [.getLastName()](#Person+getLastName) ⇒ <code>String</code>
+    * [.getLockOut(ms)](#Person+getLockOut)
+    * [.getLockOut()](#Person+getLockOut) ⇒ <code>false</code> \| <code>Durata</code>
+    * [.reset()](#Person+reset)
 
 
 * * *
@@ -673,6 +676,41 @@ Returns the firstname of the Person
 
 ### person.getLastName() ⇒ <code>String</code>
 Returns the lastname of the Person
+
+**Kind**: instance method of [<code>Person</code>](#Person)
+**Access**: public
+
+* * *
+
+<a name="Person+getLockOut"></a>
+
+### person.getLockOut(ms)
+Sets persons lock-out time in milliseconds
+
+**Kind**: instance method of [<code>Person</code>](#Person)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| ms | <code>Integer</code> |
+
+
+* * *
+
+<a name="Person+getLockOut"></a>
+
+### person.getLockOut() ⇒ <code>false</code> \| <code>Durata</code>
+Returns the lock-out, if set
+
+**Kind**: instance method of [<code>Person</code>](#Person)
+**Access**: public
+
+* * *
+
+<a name="Person+reset"></a>
+
+### person.reset()
+Resets the lock-out
 
 **Kind**: instance method of [<code>Person</code>](#Person)
 **Access**: public
@@ -838,8 +876,9 @@ Class to manage the entries in the playlist
 **Access**: private
 
 * [FightEmitter](#FightEmitter) ℗
-    * [new FightEmitter(receiverID, fight)](#new_FightEmitter_new)
+    * [new FightEmitter(receiverID, fight, servers)](#new_FightEmitter_new)
     * [.isConnected()](#FightEmitter+isConnected) ⇒ <code>Boolean</code>
+    * [.getFight()](#FightEmitter+getFight)
     * [.replaceFight()](#FightEmitter+replaceFight)
     * [.disconnect()](#FightEmitter+disconnect)
     * [.connect()](#FightEmitter+connect) ⇒ <code>Promise</code>
@@ -853,12 +892,13 @@ Class to manage the entries in the playlist
 
 <a name="new_FightEmitter_new"></a>
 
-### new FightEmitter(receiverID, fight)
+### new FightEmitter(receiverID, fight, servers)
 
 | Param | Type |
 | --- | --- |
 | receiverID | <code>String</code> |
 | fight | [<code>Fight</code>](#Fight) |
+| servers | <code>Array</code> |
 
 
 * * *
@@ -867,6 +907,16 @@ Class to manage the entries in the playlist
 
 ### fightEmitter.isConnected() ⇒ <code>Boolean</code>
 Returns whether the connection to a FightReceiver is established
+
+**Kind**: instance method of [<code>FightEmitter</code>](#FightEmitter)
+**Access**: public
+
+* * *
+
+<a name="FightEmitter+getFight"></a>
+
+### fightEmitter.getFight()
+Returns the fight
 
 **Kind**: instance method of [<code>FightEmitter</code>](#FightEmitter)
 **Access**: public
@@ -961,7 +1011,7 @@ Will be fired when peer connection has been established
 **Access**: private
 
 * [FightReceiver](#FightReceiver) ℗
-    * [new FightReceiver(receiverID, viewConfig)](#new_FightReceiver_new)
+    * [new FightReceiver(receiverID, viewConfig, servers)](#new_FightReceiver_new)
     * [.isConnected()](#FightReceiver+isConnected) ⇒ <code>Boolean</code>
     * ["disconnect"](#FightReceiver+event_disconnect)
     * ["establish"](#FightReceiver+event_establish)
@@ -971,12 +1021,13 @@ Will be fired when peer connection has been established
 
 <a name="new_FightReceiver_new"></a>
 
-### new FightReceiver(receiverID, viewConfig)
+### new FightReceiver(receiverID, viewConfig, servers)
 
 | Param | Type |
 | --- | --- |
 | receiverID | <code>String</code> |
 | viewConfig | <code>Object</code> |
+| servers | <code>Array</code> |
 
 
 * * *

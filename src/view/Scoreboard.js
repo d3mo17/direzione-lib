@@ -25,14 +25,14 @@
 /** @namespace "Direzione.Scoreboard" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['direzione-lib/model/Fight'], factory)
+        define(['direzione-lib/model/Fight', 'direzione-lib/util/Utils'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Fight'))
+        module.exports = factory(require('../model/Fight'), require('../util/Utils'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.Scoreboard = factory(root.Direzione.Fight)
+        root.Direzione.Scoreboard = factory(root.Direzione.Fight, root.Direzione.Utils)
     }
-}(this, function (Fight) {
+}(this, function (Fight, Utils) {
 
     /**
      * @class
@@ -155,18 +155,6 @@
      */
 
     /**
-     * Display milliseconds as minutes and seconds
-     *
-     * @private
-     * @param   {Integer} timeLeft_msec
-     * @returns {String}
-     */
-    function _displayMinSec(timeLeft_msec) {
-        var timeLeft_sec  = Math.ceil(timeLeft_msec / 1000)
-        return (Math.floor(timeLeft_sec/60) + ':' + ((timeLeft_sec%60)+'').padStart(2,'0'))
-    }
-
-    /**
      * Extracts last three milliseconds and fills up with zeros to the left, if necessary
      *
      * @private
@@ -194,7 +182,7 @@
      * @private
      */
     function _updateView() {
-        this[' outputElems'].countdown.innerText = _displayMinSec(this[' fight'].getTimeLeft())
+        this[' outputElems'].countdown.innerText = Utils.getMinSecDisplay(this[' fight'].getTimeLeft())
         var countup = this[' fight'].getCountUp()
         if (countup) {
             var milliseconds = countup.get()

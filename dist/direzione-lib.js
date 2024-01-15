@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.11.1
+ * Direzione Library v0.12.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -193,6 +193,13 @@
      * @const {number}
      */
     Fight.COUNTUP = 10 * 1000 // ms
+
+    /**
+     * Lock-out of persons after a fight (in milliseconds)
+     * @readonly
+     * @const {number}
+     */
+    Fight.LOCK_OUT = 10 * 60 * 1000 // ms
 
     Fight.SIDE_WHITE = 'white'
     Fight.SIDE_RED = 'red'
@@ -546,6 +553,9 @@
         // fight is controlled from the outside were the logic happens
         if (typeof msDownForce !== 'undefined') return
 
+        this[' whiteOpponent'].getPerson().setLockOut(this[' settings'].getLockOutTime())
+        this[' redOpponent'].getPerson().setLockOut(this[' settings'].getLockOutTime())
+
         _dispatch.call(
             this, 'stop', [
                 this[' countdown'].get(),
@@ -636,6 +646,7 @@
         // Constants to make accessable:
         DURATION: Fight.DURATION,
         COUNTUP: Fight.COUNTUP,
+        LOCK_OUT: Fight.LOCK_OUT,
         SIDE_WHITE: Fight.SIDE_WHITE,
         SIDE_RED: Fight.SIDE_RED,
         SIDE_CENTER: Fight.SIDE_CENTER
@@ -687,8 +698,9 @@
      * @borrows <anonymous>~_fromStorage as fromStorage
      */
     function FightSettings() {
-        this.duration     = Fight.DURATION
-        this.countUpLimit = Fight.COUNTUP
+        this.duration      = Fight.DURATION
+        this.countUpLimit  = Fight.COUNTUP
+        this.personLockOut = Fight.LOCK_OUT
         this.fromStorage()
     }
 
@@ -697,6 +709,7 @@
         fromStorage: _fromStorage,
         getDuration: function () { return this.duration },
         getCountUpLimit: function () { return this.countUpLimit },
+        getLockOutTime: function () { return this.personLockOut },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
                 throw TypeError('Duration has to be of type integer')
@@ -709,6 +722,13 @@
                 throw TypeError('Limit for count up has to be of type integer')
             }
             this.countUpLimit = countUpLimit
+            return this
+        },
+        setLockOutTime: function (lockOutTime) {
+            if (! Number.isInteger(lockOutTime)) {
+                throw TypeError('The lock-out time has to be of type integer')
+            }
+            this.personLockOut = lockOutTime
             return this
         }
     }
@@ -899,6 +919,7 @@
             _dispatch.call(this, 'reset')
             this[' score'] = 0
             this[' penalty'] = 0
+            this.getPerson().reset()
         }
     }
 
@@ -1131,6 +1152,17 @@
         },
         getLastName: function () {
             return this[' lastName']
+        },
+        setLockOut: function (ms) {
+            this.reset()
+            this[' lockout'] = Durata.create(ms, 0, ms)
+        },
+        getLockOut: function () {
+            return typeof this[' lockout'] === 'undefined' ? false : this[' lockout']
+        },
+        reset: function () {
+            (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
+            delete this[' lockout']
         }
     }
 
@@ -1156,6 +1188,29 @@
      * @method  Person#getLastName
      * @public
      * @returns {String}
+     */
+
+    /**
+     * Sets persons lock-out time in milliseconds
+     *
+     * @method  Person#getLockOut
+     * @param   {Integer} ms
+     * @public
+     */
+
+    /**
+     * Returns the lock-out, if set
+     *
+     * @method  Person#getLockOut
+     * @public
+     * @returns {false|Durata}
+     */
+
+    /**
+     * Resets the lock-out
+     *
+     * @method  Person#reset
+     * @public
      */
 
     // Module-API
@@ -1314,6 +1369,7 @@
             node[' next']            = this[' cursor'][' next']
             this[' cursor'][' next'] = node
             node[' prev']            = this[' cursor']
+            this[' cursor']          = node
         }
         this[' length']++;
         this[' eof'] = false;
@@ -1472,6 +1528,85 @@
  *
  * @param   {Object} root
  * @param   {Function} factory
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.Utils" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/util/Utils',factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory()
+    } else {
+        root.Direzione = root.Direzione || {}
+        root.Direzione.Utils = factory()
+    }
+}(this, function () {
+
+    /**
+     * Loads a JS-file from a given path and passes the so (hopefully) loaded
+     * member variable "Direzione.translation" to the given callback-function
+     *
+     * @public
+     * @static
+     * @method   loadTranslationJS
+     * @memberof "Direzione.Utils"
+     *
+     * @param    {String} path
+     * @param    {Function} callback
+     *
+     * @returns  {String}
+     */
+    function loadTranslationJS(path, callback) {
+        var script = document.createElement('script');
+
+        script.onload = function () {
+            callback(Direzione.translation)
+        };
+        script.src = path;
+
+        document.head.appendChild(script);
+    }
+
+    /**
+     * Returns converted milliseconds as string showing minutes and seconds
+     *
+     * @private
+     * @param   {Integer} timeLeft_msec
+     * @returns {String}
+     */
+    function getMinSecDisplay(timeLeft_msec) {
+        var timeLeft_sec  = Math.ceil(timeLeft_msec / 1000)
+        return (Math.floor(timeLeft_sec/60) + ':' + ((timeLeft_sec%60)+'').padStart(2,'0'))
+    }
+
+    // Module-API
+    return {
+        loadTranslationJS: loadTranslationJS,
+        getMinSecDisplay:  getMinSecDisplay
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2023 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
  *
  * @license GPL-3.0
  *
@@ -1480,14 +1615,14 @@
 /** @namespace "Direzione.Scoreboard" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/view/Scoreboard',['direzione-lib/model/Fight'], factory)
+        define('direzione-lib/view/Scoreboard',['direzione-lib/model/Fight', 'direzione-lib/util/Utils'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Fight'))
+        module.exports = factory(require('../model/Fight'), require('../util/Utils'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.Scoreboard = factory(root.Direzione.Fight)
+        root.Direzione.Scoreboard = factory(root.Direzione.Fight, root.Direzione.Utils)
     }
-}(this, function (Fight) {
+}(this, function (Fight, Utils) {
 
     /**
      * @class
@@ -1610,18 +1745,6 @@
      */
 
     /**
-     * Display milliseconds as minutes and seconds
-     *
-     * @private
-     * @param   {Integer} timeLeft_msec
-     * @returns {String}
-     */
-    function _displayMinSec(timeLeft_msec) {
-        var timeLeft_sec  = Math.ceil(timeLeft_msec / 1000)
-        return (Math.floor(timeLeft_sec/60) + ':' + ((timeLeft_sec%60)+'').padStart(2,'0'))
-    }
-
-    /**
      * Extracts last three milliseconds and fills up with zeros to the left, if necessary
      *
      * @private
@@ -1649,7 +1772,7 @@
      * @private
      */
     function _updateView() {
-        this[' outputElems'].countdown.innerText = _displayMinSec(this[' fight'].getTimeLeft())
+        this[' outputElems'].countdown.innerText = Utils.getMinSecDisplay(this[' fight'].getTimeLeft())
         var countup = this[' fight'].getCountUp()
         if (countup) {
             var milliseconds = countup.get()
@@ -1733,12 +1856,16 @@
      *
      * @param   {String}  receiverID
      * @param   {Fight}   fight
+     * @param   {Array}   servers
      *
      * @borrows <anonymous>~_connect as connect
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightEmitter(receiverID, fight) {
-        this[' localPeer']  = new peerjs.Peer()
+    function FightEmitter(receiverID, fight, servers) {
+        var servers = servers || []
+        var options = {config: {iceServers: servers}}
+
+        this[' localPeer']  = new peerjs.Peer(servers.length < 1 ? undefined : options)
         this[' fight']      = fight
         this[' receiverID'] = receiverID
         this[' connected']  = false
@@ -1754,6 +1881,9 @@
             return this[' connected']
         },
         on: _registerEventListener,
+        getFight: function () {
+            return this[' fight']
+        },
         replaceFight: function (fight) {
             this.disconnect()
             this[' fight'].clearListeners()
@@ -1772,6 +1902,13 @@
      * @method  FightEmitter#isConnected
      * @public
      * @returns {Boolean}
+     */
+
+    /**
+     * Returns the fight
+     *
+     * @method FightEmitter#getFight
+     * @public
      */
 
     /**
@@ -2030,11 +2167,15 @@
      *
      * @param   {String} receiverID
      * @param   {Object} viewConfig
+     * @param   {Array}  servers
      *
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightReceiver(receiverID, viewConfig) {
-        this[' localPeer']     = new peerjs.Peer(receiverID)
+    function FightReceiver(receiverID, viewConfig, servers) {
+        var servers = servers || []
+        var options = {config: {iceServers: servers}}
+
+        this[' localPeer']     = new peerjs.Peer(receiverID, servers.length < 1 ? undefined : options)
         this[' receiverID']    = receiverID
         this[' connected']     = false
         this[' conn']          = false
@@ -2214,14 +2355,14 @@
 /** @namespace "Direzione.Repertoire" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/view/Repertoire',['direzione-lib/model/Playlist'], factory)
+        define('direzione-lib/view/Repertoire',['direzione-lib/model/Playlist', 'direzione-lib/util/Utils'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Playlist'))
+        module.exports = factory(require('../model/Playlist'), require('../util/Utils'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.Repertoire = factory(root.Direzione.Playlist)
+        root.Direzione.Repertoire = factory(root.Direzione.Playlist, root.Direzione.Utils)
     }
-}(this, function (Playlist) {
+}(this, function (Playlist, Utils) {
 
     /**
      * @class
@@ -2236,14 +2377,43 @@
      * @borrows <anonymous>~_registerEventListener as on
      */
     function Repertoire(playlistModel, viewConfig) {
-        this[' playlist']     = playlistModel
-        this[' entryJig']     = viewConfig.entryJigElem.cloneNode(true)
-        this[' entryWrapper'] = viewConfig.entryWrapperElem
+        this[' playlist']        = playlistModel
+        this[' entryJig']        = viewConfig.entryJigElem.cloneNode(true)
+        this[' entryWrapper']    = viewConfig.entryWrapperElem
+        this[' cssWhiteName']    = viewConfig.selectorWhiteOpponentName || '.white'
+        this[' cssRedName']      = viewConfig.selectorRedOpponentName   || '.red'
+        this[' cssWhiteLockOut'] = viewConfig.selectorWhiteOpponentLockOut
+        this[' cssRedLockOut']   = viewConfig.selectorRedOpponentLockOut
 
         viewConfig.entryJigElem.remove();
 
         this[' entryJig'].removeAttribute('id')
         _makeListVisual.call(this)
+        _animationLoop.call(this)
+    }
+
+    /**
+     * @private
+     */
+    function _animationLoop() {
+        this[' entryWrapper'].querySelectorAll('li').forEach(function (entry) {
+            if (typeof entry.fight === 'undefined') return
+
+            var lockOutWhite = entry.fight.getWhiteOpponent().getPerson().getLockOut()
+            var lockOutRed   = entry.fight.getRedOpponent().getPerson().getLockOut()
+            var loWhiteElem  = entry.querySelector(this[' cssWhiteLockOut'])
+            var loRedElem    = entry.querySelector(this[' cssRedLockOut'])
+
+            if (loWhiteElem) {
+                loWhiteElem.innerText = (! lockOutWhite || lockOutWhite.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutWhite.get())
+            }
+            if (loRedElem) {
+                loRedElem.innerText = (! lockOutRed || lockOutRed.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutRed.get())
+            }
+        }.bind(this))
+        requestAnimationFrame(_animationLoop.bind(this))
     }
 
     /**
@@ -2255,8 +2425,8 @@
         while (fight = this[' playlist'].next()) {
             entry = this[' entryJig'].cloneNode(true)
             entry.fight = fight
-            entry.querySelector(".white").innerText = fight.getWhiteOpponent().getFullName()
-            entry.querySelector(".red").innerText   = fight.getRedOpponent().getFullName()
+            entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
+            entry.querySelector(this[' cssRedName']).innerText   = fight.getRedOpponent().getFullName()
 
             this[' entryWrapper'].appendChild(entry)
         }
@@ -2316,7 +2486,8 @@
             'direzione-lib/service/FightEmitter',
             'direzione-lib/service/FightReceiver',
             'direzione-lib/model/Playlist',
-            'direzione-lib/view/Repertoire'
+            'direzione-lib/view/Repertoire',
+            'direzione-lib/util/Utils'
         ],factory)
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory(
@@ -2329,7 +2500,8 @@
             require('../service/FightEmitter'),
             require('../service/FightReceiver'),
             require('./Playlist'),
-            require('../view/Repertoire')
+            require('../view/Repertoire'),
+            require('../util/Utils')
         )
     } else {
         root.Direzione = factory(
@@ -2342,7 +2514,8 @@
             root.Direzione.FightEmitter,
             root.Direzione.FightReceiver,
             root.Direzione.Playlist,
-            root.Direzione.Repertoire
+            root.Direzione.Repertoire,
+            root.Direzione.Utils
         )
     }
 }(this, function (
@@ -2355,7 +2528,8 @@
     FightEmitter,
     FightReceiver,
     Playlist,
-    Repertoire
+    Repertoire,
+    Utils
 ) {
     // Module-API
     return {
@@ -2368,73 +2542,8 @@
         FightEmitter:  FightEmitter,
         FightReceiver: FightReceiver,
         Playlist:      Playlist,
-        Repertoire:    Repertoire
-    }
-}))
-;
-/**
- * A library of components that can be used to manage a martial arts tournament
- *
- * Copyright (C) 2023 Daniel Moritz
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, according to version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
- * @param   {Object} root
- * @param   {Function} factory
- * @license GPL-3.0
- *
- * @returns {Object}
- */
-/** @namespace "Direzione.Utils" */
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/util/Utils',factory)
-    } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory()
-    } else {
-        root.Direzione = root.Direzione || {}
-        root.Direzione.Utils = factory()
-    }
-}(this, function () {
-
-    /**
-     * Loads a JS-file from a given path and passes the so (hopefully) loaded
-     * member variable "Direzione.translation" to the given callback-function
-     *
-     * @public
-     * @static
-     * @method   loadTranslationJS
-     * @memberof "Direzione.Utils"
-     *
-     * @param    {String} path
-     * @param    {Function} callback
-     *
-     * @returns  {String}
-     */
-    function loadTranslationJS(path, callback) {
-        var script = document.createElement('script');
-
-        script.onload = function () {
-            callback(Direzione.translation)
-        };
-        script.src = path;
-
-        document.head.appendChild(script);
-    }
-
-    // Module-API
-    return {
-        loadTranslationJS: loadTranslationJS
+        Repertoire:    Repertoire,
+        Utils:         Utils
     }
 }))
 ;

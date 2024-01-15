@@ -43,8 +43,9 @@
      * @borrows <anonymous>~_fromStorage as fromStorage
      */
     function FightSettings() {
-        this.duration     = Fight.DURATION
-        this.countUpLimit = Fight.COUNTUP
+        this.duration      = Fight.DURATION
+        this.countUpLimit  = Fight.COUNTUP
+        this.personLockOut = Fight.LOCK_OUT
         this.fromStorage()
     }
 
@@ -53,6 +54,7 @@
         fromStorage: _fromStorage,
         getDuration: function () { return this.duration },
         getCountUpLimit: function () { return this.countUpLimit },
+        getLockOutTime: function () { return this.personLockOut },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
                 throw TypeError('Duration has to be of type integer')
@@ -65,6 +67,13 @@
                 throw TypeError('Limit for count up has to be of type integer')
             }
             this.countUpLimit = countUpLimit
+            return this
+        },
+        setLockOutTime: function (lockOutTime) {
+            if (! Number.isInteger(lockOutTime)) {
+                throw TypeError('The lock-out time has to be of type integer')
+            }
+            this.personLockOut = lockOutTime
             return this
         }
     }
