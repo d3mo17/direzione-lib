@@ -49,6 +49,11 @@
         this.registerEventListeners()
     }
 
+    FightHistory.prototype = {
+        getFight: function () { return this[' fight'] },
+        getLog: function () { return JSON.parse(JSON.stringify(this[' log'])) }
+    }
+
     /**
      * Inserts a log entry to the history
      *

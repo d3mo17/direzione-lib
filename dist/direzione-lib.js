@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.12.0
+ * Direzione Library v0.13.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -50,6 +50,11 @@
         this[' log']   = []
 
         this.registerEventListeners()
+    }
+
+    FightHistory.prototype = {
+        getFight: function () { return this[' fight'] },
+        getLog: function () { return JSON.parse(JSON.stringify(this[' log'])) }
     }
 
     /**
