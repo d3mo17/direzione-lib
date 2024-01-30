@@ -43,6 +43,7 @@
      * @param   {FightSettings} settings
      * @param   {Opponent} whiteOpponent
      * @param   {Opponent} redOpponent
+     * @param   {Boolean} noHistory
      *
      * @borrows <anonymous>~_removeAllEventListeners as clearListeners
      * @borrows <anonymous>~_getTimeLeft as getTimeLeft
@@ -54,12 +55,13 @@
      * @borrows <anonymous>~_stop as stop
      * @borrows <anonymous>~_toketa as toketa
      */
-    function Fight(settings, whiteOpponent, redOpponent) {
+    function Fight(settings, whiteOpponent, redOpponent, noHistory) {
         this[' settings']      = settings
         this[' whiteOpponent'] = whiteOpponent
         this[' redOpponent']   = redOpponent
 
-        this[' history']  = FightHistory.create(this)
+        this[' history']  = (typeof noHistory !== 'undefined') && !!noHistory
+            ? false : FightHistory.create(this)
 
         this[' stopped']  = false
         this[' listener'] = { reset: [], startPauseResume: [], osaeKomi: [], stop: [], toketa: [], removeCountUp: [] }
@@ -475,7 +477,7 @@
      * @param {*} data
      */
     function _dispatch(type, data) {
-        this[' history'].insert(type, data)
+        !!this[' history'] && this[' history'].insert(type, data)
 
         this[' listener'][type].forEach(function (listener) {
             listener.call(this, data)
@@ -524,10 +526,11 @@
          * @param    {FightSettings} settings
          * @param    {Opponent} thousandsSeparator
          * @param    {Opponent} decimalCount
+         * @param    {Boolean} noHistory
          * @returns  {Fight}
          */
-        create: function (settings, whiteOpponent, redOpponent) {
-            return new Fight(settings, whiteOpponent, redOpponent);
+        create: function (settings, whiteOpponent, redOpponent, noHistory) {
+            return new Fight(settings, whiteOpponent, redOpponent, noHistory);
         },
         // Constants to make accessable:
         DURATION: Fight.DURATION,

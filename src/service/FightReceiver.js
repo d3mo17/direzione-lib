@@ -118,7 +118,7 @@
                 case 'fight':
                     var settings = FightSettings.create()
                     settings.duration = data[2]
-                    this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'])
+                    this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return
                 case 'countup':

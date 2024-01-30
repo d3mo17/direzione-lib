@@ -94,7 +94,7 @@ Fetches the settings from the local storage and applies them to this object
 **Access**: private
 
 * [Fight](#Fight) ℗
-    * [new Fight(settings, whiteOpponent, redOpponent)](#new_Fight_new)
+    * [new Fight(settings, whiteOpponent, redOpponent, noHistory)](#new_Fight_new)
     * [.getHistory()](#Fight+getHistory) ⇒ [<code>FightHistory</code>](#FightHistory)
     * [.getCountDown()](#Fight+getCountDown) ⇒ <code>DurataSingleValue</code> \| <code>false</code>
     * [.getCountUp()](#Fight+getCountUp) ⇒ <code>DurataSingleValue</code> \| <code>false</code>
@@ -123,13 +123,14 @@ Fetches the settings from the local storage and applies them to this object
 
 <a name="new_Fight_new"></a>
 
-### new Fight(settings, whiteOpponent, redOpponent)
+### new Fight(settings, whiteOpponent, redOpponent, noHistory)
 
 | Param | Type |
 | --- | --- |
 | settings | [<code>FightSettings</code>](#FightSettings) |
 | whiteOpponent | [<code>Opponent</code>](#Opponent) |
 | redOpponent | [<code>Opponent</code>](#Opponent) |
+| noHistory | <code>Boolean</code> |
 
 
 * * *
@@ -1195,7 +1196,7 @@ Creates an object to manage settings to a fight
 
 <a name="Direzione.Fight.create"></a>
 
-### Direzione.Fight.create(settings, thousandsSeparator, decimalCount) ⇒ [<code>Fight</code>](#Fight)
+### Direzione.Fight.create(settings, thousandsSeparator, decimalCount, noHistory) ⇒ [<code>Fight</code>](#Fight)
 Creates an object to manage a fight.
 
 **Kind**: static method of [<code>Direzione.Fight</code>](#Direzione.Fight)
@@ -1205,6 +1206,7 @@ Creates an object to manage a fight.
 | settings | [<code>FightSettings</code>](#FightSettings) |
 | thousandsSeparator | [<code>Opponent</code>](#Opponent) |
 | decimalCount | [<code>Opponent</code>](#Opponent) |
+| noHistory | <code>Boolean</code> |
 
 
 * * *
