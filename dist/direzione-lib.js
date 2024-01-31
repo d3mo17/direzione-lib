@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.14.0
+ * Direzione Library v0.14.1
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -364,7 +364,7 @@
         this.getRedOpponent().clearListeners()
         this.getWhiteOpponent().clearListeners()
 
-        externalOnly && this.getHistory().registerEventListeners()
+        externalOnly && !!this.getHistory() && this.getHistory().registerEventListeners()
     }
 
     /**

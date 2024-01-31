@@ -245,7 +245,7 @@
         this.getRedOpponent().clearListeners()
         this.getWhiteOpponent().clearListeners()
 
-        externalOnly && this.getHistory().registerEventListeners()
+        externalOnly && !!this.getHistory() && this.getHistory().registerEventListeners()
     }
 
     /**
