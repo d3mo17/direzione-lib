@@ -126,7 +126,10 @@
 
         _send.call(this, opponent4Emitter('white', this[' fight'].getWhiteOpponent()));
         _send.call(this, opponent4Emitter('red',   this[' fight'].getRedOpponent()));
-        _send.call(this, ['new', 'fight', this[' fight'].getTimeLeft()]);
+        _send.call(this, [
+            'new', 'fight', this[' fight'].getTimeLeft(),
+            this[' fight'][' settings'].getCountUpLimit()
+        ]);
         if (this[' fight'].isRunning()) {
             _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
         }

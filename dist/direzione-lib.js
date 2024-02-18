@@ -1963,7 +1963,10 @@
 
         _send.call(this, opponent4Emitter('white', this[' fight'].getWhiteOpponent()));
         _send.call(this, opponent4Emitter('red',   this[' fight'].getRedOpponent()));
-        _send.call(this, ['new', 'fight', this[' fight'].getTimeLeft()]);
+        _send.call(this, [
+            'new', 'fight', this[' fight'].getTimeLeft(),
+            this[' fight'][' settings'].getCountUpLimit()
+        ]);
         if (this[' fight'].isRunning()) {
             _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
         }
@@ -2244,7 +2247,7 @@
                     Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
                 case 'fight':
                     var settings = FightSettings.create()
-                    settings.duration = data[2]
+                    settings.setDuration(data[2]).setCountUpLimit(data[3])
                     this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return

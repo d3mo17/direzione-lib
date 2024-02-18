@@ -117,7 +117,7 @@
                     Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
                 case 'fight':
                     var settings = FightSettings.create()
-                    settings.duration = data[2]
+                    settings.setDuration(data[2]).setCountUpLimit(data[3])
                     this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return
