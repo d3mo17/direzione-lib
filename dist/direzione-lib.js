@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.14.1
+ * Direzione Library v0.15.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -696,6 +696,8 @@
     }
 }(this, function (Fight) {
 
+    var SETTINGS  = ['duration', 'countUpLimit', 'personLockOut']
+
     /**
      * @class
      * @hideconstructor
@@ -710,11 +712,13 @@
         this.countUpLimit  = Fight.COUNTUP
         this.personLockOut = Fight.LOCK_OUT
         this.fromStorage()
+        this.fromURLParameters()
     }
 
     FightSettings.prototype = {
         toStorage:   _toStorage,
         fromStorage: _fromStorage,
+        fromURLParameters: _fromURLParameters,
         getDuration: function () { return this.duration },
         getCountUpLimit: function () { return this.countUpLimit },
         getLockOutTime: function () { return this.personLockOut },
@@ -765,6 +769,19 @@
                 this[key] = obj[key]
             }, this)
         }
+    }
+
+    /**
+     * Fetches the settings from url parameters given in query and applies them to this object
+     *
+     * @method  AppSettings#fromURLParameters
+     * @public
+     */
+    function _fromURLParameters() {
+        var urlParams = new URLSearchParams(window.location.search)
+        Array.from(urlParams.entries()).forEach(function (entry) {
+            SETTINGS.includes(entry[0]) && (this[entry[0]] = entry[1])
+        }, this)
     }
 
     // Module-API
