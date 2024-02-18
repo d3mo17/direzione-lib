@@ -33,7 +33,7 @@
     }
 }(this, function (Fight) {
 
-    var SETTINGS  = ['duration', 'countUpLimit', 'personLockOut']
+    var SETTINGS  = ['duration', 'countUpLimit', 'countUpLimitIppon', 'personLockOut']
 
     /**
      * @class
@@ -45,9 +45,10 @@
      * @borrows <anonymous>~_fromStorage as fromStorage
      */
     function FightSettings() {
-        this.duration      = Fight.DURATION
-        this.countUpLimit  = Fight.COUNTUP
-        this.personLockOut = Fight.LOCK_OUT
+        this.duration          = Fight.DURATION
+        this.countUpLimit      = Fight.COUNTUP
+        this.countUpLimitIppon = Fight.COUNTUP * 2
+        this.personLockOut     = Fight.LOCK_OUT
         this.fromStorage()
         this.fromURLParameters()
     }
@@ -58,6 +59,7 @@
         fromURLParameters: _fromURLParameters,
         getDuration: function () { return this.duration },
         getCountUpLimit: function () { return this.countUpLimit },
+        getCountUpLimitIppon: function () { return this.countUpLimitIppon },
         getLockOutTime: function () { return this.personLockOut },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
@@ -68,9 +70,16 @@
         },
         setCountUpLimit: function (countUpLimit) {
             if (! Number.isInteger(countUpLimit)) {
-                throw TypeError('Limit for count up has to be of type integer')
+                throw TypeError('Limit for count up (wazari) has to be of type integer')
             }
             this.countUpLimit = countUpLimit
+            return this
+        },
+        setCountUpLimitIppon: function (countUpLimit) {
+            if (! Number.isInteger(countUpLimit)) {
+                throw TypeError('Limit for count up (ippon) has to be of type integer')
+            }
+            this.countUpLimitIppon = countUpLimit
             return this
         },
         setLockOutTime: function (lockOutTime) {

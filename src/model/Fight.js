@@ -360,7 +360,7 @@
     function _newCountUp(side, forceMS) {
         var local_ms   = forceMS || 0
         var countUp_ms = this[' settings'].getCountUpLimit()
-        var to = typeof forceMS !== 'undefined' ? countUp_ms * 2 : countUp_ms
+        var to = typeof forceMS !== 'undefined' ? this[' settings'].getCountUpLimitIppon() : countUp_ms
         _countUpExists.call(this) && this[' countup'].stop('dirty')
         this[' countup'] = Durata.create(local_ms, to, to - local_ms)
         this[' countup'].side = side

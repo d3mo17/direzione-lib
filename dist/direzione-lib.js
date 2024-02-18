@@ -479,7 +479,7 @@
     function _newCountUp(side, forceMS) {
         var local_ms   = forceMS || 0
         var countUp_ms = this[' settings'].getCountUpLimit()
-        var to = typeof forceMS !== 'undefined' ? countUp_ms * 2 : countUp_ms
+        var to = typeof forceMS !== 'undefined' ? this[' settings'].getCountUpLimitIppon() : countUp_ms
         _countUpExists.call(this) && this[' countup'].stop('dirty')
         this[' countup'] = Durata.create(local_ms, to, to - local_ms)
         this[' countup'].side = side
@@ -696,7 +696,7 @@
     }
 }(this, function (Fight) {
 
-    var SETTINGS  = ['duration', 'countUpLimit', 'personLockOut']
+    var SETTINGS  = ['duration', 'countUpLimit', 'countUpLimitIppon', 'personLockOut']
 
     /**
      * @class
@@ -708,9 +708,10 @@
      * @borrows <anonymous>~_fromStorage as fromStorage
      */
     function FightSettings() {
-        this.duration      = Fight.DURATION
-        this.countUpLimit  = Fight.COUNTUP
-        this.personLockOut = Fight.LOCK_OUT
+        this.duration          = Fight.DURATION
+        this.countUpLimit      = Fight.COUNTUP
+        this.countUpLimitIppon = Fight.COUNTUP * 2
+        this.personLockOut     = Fight.LOCK_OUT
         this.fromStorage()
         this.fromURLParameters()
     }
@@ -721,6 +722,7 @@
         fromURLParameters: _fromURLParameters,
         getDuration: function () { return this.duration },
         getCountUpLimit: function () { return this.countUpLimit },
+        getCountUpLimitIppon: function () { return this.countUpLimitIppon },
         getLockOutTime: function () { return this.personLockOut },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
@@ -731,9 +733,16 @@
         },
         setCountUpLimit: function (countUpLimit) {
             if (! Number.isInteger(countUpLimit)) {
-                throw TypeError('Limit for count up has to be of type integer')
+                throw TypeError('Limit for count up (wazari) has to be of type integer')
             }
             this.countUpLimit = countUpLimit
+            return this
+        },
+        setCountUpLimitIppon: function (countUpLimit) {
+            if (! Number.isInteger(countUpLimit)) {
+                throw TypeError('Limit for count up (ippon) has to be of type integer')
+            }
+            this.countUpLimitIppon = countUpLimit
             return this
         },
         setLockOutTime: function (lockOutTime) {
@@ -1965,7 +1974,8 @@
         _send.call(this, opponent4Emitter('red',   this[' fight'].getRedOpponent()));
         _send.call(this, [
             'new', 'fight', this[' fight'].getTimeLeft(),
-            this[' fight'][' settings'].getCountUpLimit()
+            this[' fight'][' settings'].getCountUpLimit(),
+            this[' fight'][' settings'].getCountUpLimitIppon()
         ]);
         if (this[' fight'].isRunning()) {
             _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
@@ -2247,7 +2257,7 @@
                     Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
                 case 'fight':
                     var settings = FightSettings.create()
-                    settings.setDuration(data[2]).setCountUpLimit(data[3])
+                    settings.setDuration(data[2]).setCountUpLimit(data[3]).setCountUpLimitIppon(data[4])
                     this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return
