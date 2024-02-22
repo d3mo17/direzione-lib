@@ -129,14 +129,18 @@
         _send.call(this, [
             'new', 'fight', this[' fight'].getTimeLeft(),
             this[' fight'][' settings'].getCountUpLimit(),
-            this[' fight'][' settings'].getCountUpLimitIppon()
+            this[' fight'][' settings'].getCountUpLimitIppon(),
+            this[' fight'][' settings'].isGripDisplayInverted(),
+            this[' fight'][' settings'].isGripSideInverted()
         ]);
         if (this[' fight'].isRunning()) {
             _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
         }
         if (cu = this[' fight'].getCountUp()) {
             var status = cu.isComplete() ? 4 : cu.isStopped() ? 3 : cu.isPaused() ? 2 : 1
-            _send.call(this, ['new', 'countup', cu.side, cu.get(), status])
+            var side   = this[' fight'][' settings'].isGripSideInverted()
+                            ? this[' fight'].invertSide(cu.side) : cu.side
+            _send.call(this, ['new', 'countup', side, cu.get(), status])
         }
     }
 

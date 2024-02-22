@@ -49,18 +49,23 @@
         this.countUpLimit      = Fight.COUNTUP
         this.countUpLimitIppon = Fight.COUNTUP * 2
         this.personLockOut     = Fight.LOCK_OUT
+        this.invertGripDisplay = false
+        this.invertGripSide    = false
+
         this.fromStorage()
         this.fromURLParameters()
     }
 
     FightSettings.prototype = {
-        toStorage:   _toStorage,
-        fromStorage: _fromStorage,
-        fromURLParameters: _fromURLParameters,
-        getDuration: function () { return this.duration },
-        getCountUpLimit: function () { return this.countUpLimit },
-        getCountUpLimitIppon: function () { return this.countUpLimitIppon },
-        getLockOutTime: function () { return this.personLockOut },
+        toStorage:             _toStorage,
+        fromStorage:           _fromStorage,
+        fromURLParameters:     _fromURLParameters,
+        getDuration:           function () { return this.duration },
+        getCountUpLimit:       function () { return this.countUpLimit },
+        getCountUpLimitIppon:  function () { return this.countUpLimitIppon },
+        getLockOutTime:        function () { return this.personLockOut },
+        isGripDisplayInverted: function () { return this.invertGripDisplay },
+        isGripSideInverted:    function () { return this.invertGripSide },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
                 throw TypeError('Duration has to be of type integer')
@@ -87,6 +92,14 @@
                 throw TypeError('The lock-out time has to be of type integer')
             }
             this.personLockOut = lockOutTime
+            return this
+        },
+        setGripDisplayInverted: function (enable) {
+            this.invertGripDisplay = !!enable
+            return this
+        },
+        setGripSideInverted: function (enable) {
+            this.invertGripSide = !!enable
             return this
         }
     }

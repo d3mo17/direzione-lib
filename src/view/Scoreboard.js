@@ -188,7 +188,9 @@
             var milliseconds = countup.get()
             this[' outputElems'].clockSec.innerText  = _displaySecPassed(milliseconds)
             this[' outputElems'].clockMSec.innerText = _displayMSecPassed(milliseconds)
-            this[' outputElems'].clockSec.parentNode.className = countup.side
+            this[' outputElems'].clockSec.parentNode.className
+                = this[' fight'][' settings'].isGripDisplayInverted()
+                    ? this[' fight'].invertSide(countup.side) : countup.side
         } else {
             this[' outputElems'].clockSec.innerText  = _displaySecPassed(0)
             this[' outputElems'].clockMSec.innerText = _displayMSecPassed(0)
@@ -217,5 +219,5 @@
         create: function (fightModel, viewConfig) {
             return new Scoreboard(fightModel, viewConfig)
         }
-    };
-}));
+    }
+}))

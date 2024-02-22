@@ -101,6 +101,7 @@ Fetches the settings from the local storage and applies them to this object
     * [.getWhiteOpponent()](#Fight+getWhiteOpponent) ⇒ [<code>Opponent</code>](#Opponent)
     * [.getRedOpponent()](#Fight+getRedOpponent) ⇒ [<code>Opponent</code>](#Opponent)
     * [.isStopped()](#Fight+isStopped) ⇒ <code>Boolean</code>
+    * [.invertSide()](#Fight+invertSide) ⇒ <code>String</code>
     * [.isRunning()](#Fight+isRunning) ⇒ <code>Boolean</code>
     * [.getTimeLeft()](#Fight+getTimeLeft) ⇒ <code>Integer</code> ℗
     * [.on(type, callback)](#Fight+on) ℗
@@ -189,6 +190,16 @@ Returns the object to manage the judika on red side
 
 ### fight.isStopped() ⇒ <code>Boolean</code>
 Returns whether the fight is going on
+
+**Kind**: instance method of [<code>Fight</code>](#Fight)
+**Access**: public
+
+* * *
+
+<a name="Fight+invertSide"></a>
+
+### fight.invertSide() ⇒ <code>String</code>
+Inverts passed side; Makes left from right and right from left - keeps center ...
 
 **Kind**: instance method of [<code>Fight</code>](#Fight)
 **Access**: public

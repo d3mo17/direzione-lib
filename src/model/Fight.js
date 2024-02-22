@@ -89,8 +89,8 @@
      */
     Fight.LOCK_OUT = 10 * 60 * 1000 // ms
 
-    Fight.SIDE_WHITE = 'white'
-    Fight.SIDE_RED = 'red'
+    Fight.SIDE_WHITE  = 'white'
+    Fight.SIDE_RED    = 'red'
     Fight.SIDE_CENTER = 'center'
 
     Fight.prototype = {
@@ -103,6 +103,7 @@
         getTimeLeft:      _getTimeLeft,
         isRunning:        _isRunning,
         isStopped:        function () { return this[' stopped'] },
+        invertSide:       _invertSide,
         on:               _registerEventListener,
         removeCountUp:    _removeCountUp,
         reset:            _reset,
@@ -158,6 +159,14 @@
      * @method  Fight#isStopped
      * @public
      * @returns {Boolean}
+     */
+
+    /**
+     * Inverts passed side; Makes left from right and right from left - keeps center ...
+     *
+     * @method  Fight#invertSide
+     * @public
+     * @returns {String}
      */
 
     /**
@@ -350,11 +359,22 @@
     }
 
     /**
+     * Inverts passed side; Makes left from right and right from left - keeps center ...
+     *
+     * @private
+     * @param   {String} side
+     */
+    function _invertSide(side) {
+        if (side === Fight.SIDE_CENTER) return Fight.SIDE_CENTER
+        return side === Fight.SIDE_RED ? Fight.SIDE_WHITE : Fight.SIDE_RED
+    }
+
+    /**
      * Creates a new object for the count up
      *
      * @private
      * @fires   Fight#toketa
-     * @param   {String} side defines which opponent holds the other down ("red", "white" or "center")
+     * @param   {String}  side defines which opponent holds the other down ("red", "white" or "center")
      * @param   {Integer} forceMS Optional milliseconds the start of count up should be set to
      */
     function _newCountUp(side, forceMS) {
@@ -391,17 +411,19 @@
      *
      * @method  Fight#osaeKomi
      * @fires   Fight#osaeKomi
-     * @param   {String} side defines which opponent holds the other down ("red", "white" or "center")
+     * @param   {String}  side defines which opponent holds the other down ("red", "white" or "center")
      * @param   {Integer} forceMS Milliseconds the count up should be forced to
      * @private
      */
     function _osaeKomi(side, forceMS) {
-        side = side || Fight.SIDE_CENTER
         if (typeof forceMS === 'undefined' && (
                 this.isStopped() ||
                 !_countdownExists.call(this) ||
                 this[' countdown'].isPaused()
         )) return
+
+        side = side || Fight.SIDE_CENTER
+        side = this[' settings'].isGripSideInverted() ? _invertSide(side) : side
 
         if (!_countUpExists.call(this) || this[' countup'].isPaused() || typeof forceMS !== 'undefined') {
             _newCountUp.call(this, side, forceMS)
@@ -413,7 +435,7 @@
         // fight is controlled from the outside were the logic happens
         if (typeof forceMS !== 'undefined') return
 
-        _dispatch.call(this, 'osaeKomi', side)
+        _dispatch.call(this, 'osaeKomi', this[' settings'].isGripSideInverted() ? _invertSide(side) : side)
     }
 
     /**
@@ -524,20 +546,21 @@
          * @method   create
          * @memberof "Direzione.Fight"
          * @param    {FightSettings} settings
-         * @param    {Opponent} thousandsSeparator
-         * @param    {Opponent} decimalCount
-         * @param    {Boolean} noHistory
+         * @param    {Opponent}      thousandsSeparator
+         * @param    {Opponent}      decimalCount
+         * @param    {Boolean}       noHistory
          * @returns  {Fight}
          */
         create: function (settings, whiteOpponent, redOpponent, noHistory) {
             return new Fight(settings, whiteOpponent, redOpponent, noHistory);
         },
+
         // Constants to make accessable:
-        DURATION: Fight.DURATION,
-        COUNTUP: Fight.COUNTUP,
-        LOCK_OUT: Fight.LOCK_OUT,
-        SIDE_WHITE: Fight.SIDE_WHITE,
-        SIDE_RED: Fight.SIDE_RED,
+        DURATION:    Fight.DURATION,
+        COUNTUP:     Fight.COUNTUP,
+        LOCK_OUT:    Fight.LOCK_OUT,
+        SIDE_WHITE:  Fight.SIDE_WHITE,
+        SIDE_RED:    Fight.SIDE_RED,
         SIDE_CENTER: Fight.SIDE_CENTER
     }
 }))

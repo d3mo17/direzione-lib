@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.15.0
+ * Direzione Library v0.16.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -208,8 +208,8 @@
      */
     Fight.LOCK_OUT = 10 * 60 * 1000 // ms
 
-    Fight.SIDE_WHITE = 'white'
-    Fight.SIDE_RED = 'red'
+    Fight.SIDE_WHITE  = 'white'
+    Fight.SIDE_RED    = 'red'
     Fight.SIDE_CENTER = 'center'
 
     Fight.prototype = {
@@ -222,6 +222,7 @@
         getTimeLeft:      _getTimeLeft,
         isRunning:        _isRunning,
         isStopped:        function () { return this[' stopped'] },
+        invertSide:       _invertSide,
         on:               _registerEventListener,
         removeCountUp:    _removeCountUp,
         reset:            _reset,
@@ -277,6 +278,14 @@
      * @method  Fight#isStopped
      * @public
      * @returns {Boolean}
+     */
+
+    /**
+     * Inverts passed side; Makes left from right and right from left - keeps center ...
+     *
+     * @method  Fight#invertSide
+     * @public
+     * @returns {String}
      */
 
     /**
@@ -469,11 +478,22 @@
     }
 
     /**
+     * Inverts passed side; Makes left from right and right from left - keeps center ...
+     *
+     * @private
+     * @param   {String} side
+     */
+    function _invertSide(side) {
+        if (side === Fight.SIDE_CENTER) return Fight.SIDE_CENTER
+        return side === Fight.SIDE_RED ? Fight.SIDE_WHITE : Fight.SIDE_RED
+    }
+
+    /**
      * Creates a new object for the count up
      *
      * @private
      * @fires   Fight#toketa
-     * @param   {String} side defines which opponent holds the other down ("red", "white" or "center")
+     * @param   {String}  side defines which opponent holds the other down ("red", "white" or "center")
      * @param   {Integer} forceMS Optional milliseconds the start of count up should be set to
      */
     function _newCountUp(side, forceMS) {
@@ -510,17 +530,19 @@
      *
      * @method  Fight#osaeKomi
      * @fires   Fight#osaeKomi
-     * @param   {String} side defines which opponent holds the other down ("red", "white" or "center")
+     * @param   {String}  side defines which opponent holds the other down ("red", "white" or "center")
      * @param   {Integer} forceMS Milliseconds the count up should be forced to
      * @private
      */
     function _osaeKomi(side, forceMS) {
-        side = side || Fight.SIDE_CENTER
         if (typeof forceMS === 'undefined' && (
                 this.isStopped() ||
                 !_countdownExists.call(this) ||
                 this[' countdown'].isPaused()
         )) return
+
+        side = side || Fight.SIDE_CENTER
+        side = this[' settings'].isGripSideInverted() ? _invertSide(side) : side
 
         if (!_countUpExists.call(this) || this[' countup'].isPaused() || typeof forceMS !== 'undefined') {
             _newCountUp.call(this, side, forceMS)
@@ -532,7 +554,7 @@
         // fight is controlled from the outside were the logic happens
         if (typeof forceMS !== 'undefined') return
 
-        _dispatch.call(this, 'osaeKomi', side)
+        _dispatch.call(this, 'osaeKomi', this[' settings'].isGripSideInverted() ? _invertSide(side) : side)
     }
 
     /**
@@ -643,20 +665,21 @@
          * @method   create
          * @memberof "Direzione.Fight"
          * @param    {FightSettings} settings
-         * @param    {Opponent} thousandsSeparator
-         * @param    {Opponent} decimalCount
-         * @param    {Boolean} noHistory
+         * @param    {Opponent}      thousandsSeparator
+         * @param    {Opponent}      decimalCount
+         * @param    {Boolean}       noHistory
          * @returns  {Fight}
          */
         create: function (settings, whiteOpponent, redOpponent, noHistory) {
             return new Fight(settings, whiteOpponent, redOpponent, noHistory);
         },
+
         // Constants to make accessable:
-        DURATION: Fight.DURATION,
-        COUNTUP: Fight.COUNTUP,
-        LOCK_OUT: Fight.LOCK_OUT,
-        SIDE_WHITE: Fight.SIDE_WHITE,
-        SIDE_RED: Fight.SIDE_RED,
+        DURATION:    Fight.DURATION,
+        COUNTUP:     Fight.COUNTUP,
+        LOCK_OUT:    Fight.LOCK_OUT,
+        SIDE_WHITE:  Fight.SIDE_WHITE,
+        SIDE_RED:    Fight.SIDE_RED,
         SIDE_CENTER: Fight.SIDE_CENTER
     }
 }))
@@ -712,18 +735,23 @@
         this.countUpLimit      = Fight.COUNTUP
         this.countUpLimitIppon = Fight.COUNTUP * 2
         this.personLockOut     = Fight.LOCK_OUT
+        this.invertGripDisplay = false
+        this.invertGripSide    = false
+
         this.fromStorage()
         this.fromURLParameters()
     }
 
     FightSettings.prototype = {
-        toStorage:   _toStorage,
-        fromStorage: _fromStorage,
-        fromURLParameters: _fromURLParameters,
-        getDuration: function () { return this.duration },
-        getCountUpLimit: function () { return this.countUpLimit },
-        getCountUpLimitIppon: function () { return this.countUpLimitIppon },
-        getLockOutTime: function () { return this.personLockOut },
+        toStorage:             _toStorage,
+        fromStorage:           _fromStorage,
+        fromURLParameters:     _fromURLParameters,
+        getDuration:           function () { return this.duration },
+        getCountUpLimit:       function () { return this.countUpLimit },
+        getCountUpLimitIppon:  function () { return this.countUpLimitIppon },
+        getLockOutTime:        function () { return this.personLockOut },
+        isGripDisplayInverted: function () { return this.invertGripDisplay },
+        isGripSideInverted:    function () { return this.invertGripSide },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
                 throw TypeError('Duration has to be of type integer')
@@ -750,6 +778,14 @@
                 throw TypeError('The lock-out time has to be of type integer')
             }
             this.personLockOut = lockOutTime
+            return this
+        },
+        setGripDisplayInverted: function (enable) {
+            this.invertGripDisplay = !!enable
+            return this
+        },
+        setGripSideInverted: function (enable) {
+            this.invertGripSide = !!enable
             return this
         }
     }
@@ -1812,7 +1848,9 @@
             var milliseconds = countup.get()
             this[' outputElems'].clockSec.innerText  = _displaySecPassed(milliseconds)
             this[' outputElems'].clockMSec.innerText = _displayMSecPassed(milliseconds)
-            this[' outputElems'].clockSec.parentNode.className = countup.side
+            this[' outputElems'].clockSec.parentNode.className
+                = this[' fight'][' settings'].isGripDisplayInverted()
+                    ? this[' fight'].invertSide(countup.side) : countup.side
         } else {
             this[' outputElems'].clockSec.innerText  = _displaySecPassed(0)
             this[' outputElems'].clockMSec.innerText = _displayMSecPassed(0)
@@ -1841,9 +1879,9 @@
         create: function (fightModel, viewConfig) {
             return new Scoreboard(fightModel, viewConfig)
         }
-    };
-}));
-
+    }
+}))
+;
 /**
  * A library of components that can be used to manage a martial arts tournament
  *
@@ -1975,14 +2013,18 @@
         _send.call(this, [
             'new', 'fight', this[' fight'].getTimeLeft(),
             this[' fight'][' settings'].getCountUpLimit(),
-            this[' fight'][' settings'].getCountUpLimitIppon()
+            this[' fight'][' settings'].getCountUpLimitIppon(),
+            this[' fight'][' settings'].isGripDisplayInverted(),
+            this[' fight'][' settings'].isGripSideInverted()
         ]);
         if (this[' fight'].isRunning()) {
             _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
         }
         if (cu = this[' fight'].getCountUp()) {
             var status = cu.isComplete() ? 4 : cu.isStopped() ? 3 : cu.isPaused() ? 2 : 1
-            _send.call(this, ['new', 'countup', cu.side, cu.get(), status])
+            var side   = this[' fight'][' settings'].isGripSideInverted()
+                            ? this[' fight'].invertSide(cu.side) : cu.side
+            _send.call(this, ['new', 'countup', side, cu.get(), status])
         }
     }
 
@@ -2257,7 +2299,12 @@
                     Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
                 case 'fight':
                     var settings = FightSettings.create()
-                    settings.setDuration(data[2]).setCountUpLimit(data[3]).setCountUpLimitIppon(data[4])
+                    settings
+                        .setDuration(data[2])
+                        .setCountUpLimit(data[3])
+                        .setCountUpLimitIppon(data[4])
+                        .setGripDisplayInverted(data[5])
+                        .setGripSideInverted(data[6])
                     this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return
