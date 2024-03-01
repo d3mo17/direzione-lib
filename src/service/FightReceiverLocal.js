@@ -1,7 +1,7 @@
 /**
  * A library of components that can be used to manage a martial arts tournament
  *
- * Copyright (C) 2023 Daniel Moritz
+ * Copyright (C) 2024 Daniel Moritz
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,11 @@
  *
  * @returns {Object}
  */
-/** @namespace "Direzione.FightReceiver" */
+/** @namespace "Direzione.FightReceiverLocal" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([
-            'peerjs/dist/peerjs.min',
+            'direzione-lib/service/LocalBroker',
             'direzione-lib/model/Fight',
             'direzione-lib/config/FightSettings',
             'direzione-lib/model/Opponent',
@@ -35,7 +35,7 @@
         ], factory)
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory(
-            require('peerjs'),
+            require('./LocalBroker'),
             require('../model/Fight'),
             require('../config/FightSettings'),
             require('../model/Opponent'),
@@ -44,8 +44,8 @@
         )
     } else {
         root.Direzione = root.Direzione || {};
-        root.Direzione.FightReceiver = factory(
-            root.peerjs,
+        root.Direzione.FightReceiverLocal = factory(
+            root.Direzione.LocalBroker,
             root.Direzione.Fight,
             root.Direzione.FightSettings,
             root.Direzione.Opponent,
@@ -53,7 +53,7 @@
             root.Direzione.Scoreboard
         )
     }
-}(this, function (peerjs, Fight, FightSettings, Opponent, Person, Scoreboard) {
+}(this, function (broker, Fight, FightSettings, Opponent, Person, Scoreboard) {
 
     var eventTypes = ['disconnect', 'establish']
 
@@ -65,15 +65,12 @@
      *
      * @param   {String} receiverID
      * @param   {Object} viewConfig
-     * @param   {Array}  servers
      *
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightReceiver(receiverID, viewConfig, servers) {
-        var servers = servers || []
-        var options = servers.length < 1 ? {} : {config: {iceServers: servers}}
+    function FightReceiverLocal(receiverID, viewConfig) {
 
-        this[' localPeer']     = new peerjs.Peer(receiverID, options)
+        this[' localPeer']     = new RTCPeerConnection()
         this[' receiverID']    = receiverID
         this[' connected']     = false
         this[' conn']          = false
@@ -84,9 +81,10 @@
         this[' fight']         = null
         this[' board']         = null
 
+        _initBroker.call(this)
         _listen.call(this)
     }
-    FightReceiver.prototype = {
+    FightReceiverLocal.prototype = {
         isConnected: function () {
             return this[' connected']
         },
@@ -96,10 +94,27 @@
     /**
      * Returns whether the connection to a FightReceiver is established
      *
-     * @method  FightReceiver#isConnected
+     * @method  FightReceiverLocal#isConnected
      * @public
      * @returns {Boolean}
      */
+
+
+    /**
+     *
+     * @private
+     */
+    function _initBroker() {
+        var b = broker.create(this[' localPeer'])
+        this[' broker'] = b
+
+        this[' localPeer'].onicecandidate      = function (e) { b.send({ candidate: e.candidate }) }
+        this[' localPeer'].onnegotiationneeded = function () {
+            this[' localPeer'].createOffer()
+                .then(function (offer) { return this[' localPeer'].setLocalDescription(offer); }.bind(this))
+                .then(function () { b.send({ sdp: this[' localPeer'].localDescription }) }.bind(this))
+        }.bind(this)
+    }
 
     /**
      * Handles data coming from FightEmitter
@@ -148,43 +163,46 @@
      * Listens to the connection expected from FightEmitter
      *
      * @private
-     * @fires   FightReceiver#establish
-     * @fires   FightReceiver#disconnect
+     * @fires   FightReceiverLocal#establish
+     * @fires   FightReceiverLocal#disconnect
      * @param   {String} type
      * @param   {*} data
      */
     function _listen() {
-        this[' localPeer'].on('connection', function(conn) {
-            this[' conn'] = conn
-            conn.on('open', function() {
+
+        this[' localPeer'].ondatachannel = function (e) {
+            this[' conn'] = e.channel;
+            this[' conn'].onmessage = function (e) {
+                _onData.call(this, JSON.parse(e.data))
+            }.bind(this)
+            this[' conn'].onopen = function() {
                 this[' connected'] = true
+                this[' broker'].close()
                 _dispatch.call(this, 'establish', 'peer opened')
-                // Receive messages
-                conn.on('data', _onData.bind(this))
-            }.bind(this))
-            conn.on('close', function() {
+            }.bind(this)
+            this[' conn'].onclose = function() {
                 this[' connected'] = false
                 this[' board'].shutdown()
                 _dispatch.call(this, 'disconnect', 'peer closed')
-            }.bind(this))
-        }.bind(this))
+            }.bind(this)
+        }.bind(this)
     }
 
     /**
      * Will be fired when peer connection was disconnected
-     * @event FightReceiver#disconnect
+     * @event FightReceiverLocal#disconnect
      */
 
     /**
      * Will be fired when peer connection has been established
-     * @event FightReceiver#establish
+     * @event FightReceiverLocal#establish
      */
 
     /**
      * Registers an event-listener to this object
      *
      * @public
-     * @method  FightReceiver#on
+     * @method  FightReceiverLocal#on
      * @param   {String} type
      * @param   {Function} callback
      */
@@ -220,13 +238,13 @@
          *
          * @static
          * @method   create
-         * @memberof "Direzione.FightReceiver"
+         * @memberof "Direzione.FightReceiverLocal"
          * @param   {String} receiverID
          * @param   {Object} viewConfig
-         * @returns {FightReceiver}
+         * @returns {FightReceiverLocal}
          */
         create: function (receiverID, viewConfig) {
-            return new FightReceiver(receiverID, viewConfig)
+            return new FightReceiverLocal(receiverID, viewConfig)
         }
     }
 }))

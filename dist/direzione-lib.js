@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.16.0
+ * Direzione Library v0.17.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -1935,9 +1935,9 @@
      */
     function FightEmitter(receiverID, fight, servers) {
         var servers = servers || []
-        var options = {config: {iceServers: servers}}
+        var options = servers.length < 1 ? {} : {config: {iceServers: servers}}
 
-        this[' localPeer']  = new peerjs.Peer(servers.length < 1 ? undefined : options)
+        this[' localPeer']  = new peerjs.Peer(options)
         this[' fight']      = fight
         this[' receiverID'] = receiverID
         this[' connected']  = false
@@ -1960,9 +1960,6 @@
             this.disconnect()
             this[' fight'].clearListeners()
             delete this[' fight']
-            this[' localPeer'].destroy()
-            delete this[' localPeer']
-            this[' localPeer']  = new peerjs.Peer()
             this[' fight'] = fight
             _registerFightHandlers.call(this)
         }
@@ -1991,7 +1988,7 @@
      */
 
     /**
-     * Emits figt dara over the connection, if established
+     * Emits fight over the connection, if established
      *
      * @private
      */
@@ -2253,9 +2250,9 @@
      */
     function FightReceiver(receiverID, viewConfig, servers) {
         var servers = servers || []
-        var options = {config: {iceServers: servers}}
+        var options = servers.length < 1 ? {} : {config: {iceServers: servers}}
 
-        this[' localPeer']     = new peerjs.Peer(receiverID, servers.length < 1 ? undefined : options)
+        this[' localPeer']     = new peerjs.Peer(receiverID, options)
         this[' receiverID']    = receiverID
         this[' connected']     = false
         this[' conn']          = false
@@ -2366,7 +2363,7 @@
      * Registers an event-listener to this object
      *
      * @public
-     * @method  FightEmitter#on
+     * @method  FightReceiver#on
      * @param   {String} type
      * @param   {Function} callback
      */
@@ -2629,6 +2626,674 @@
         Playlist:      Playlist,
         Repertoire:    Repertoire,
         Utils:         Utils
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2024 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.LocalBroker" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/service/LocalBroker',factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory()
+    } else {
+        root.Direzione = root.Direzione || {}
+        root.Direzione.LocalBroker = factory()
+    }
+}(this, function () {
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     */
+    function LocalBroker(peer) {
+        this[' localPeer']  = peer
+
+        localStorage.a = localStorage.b = JSON.stringify([]);
+        this[' idx']   = 0;
+        this[' intv']  = setInterval(function () {
+            if (!this[' in']) {
+                if (!JSON.parse(localStorage.a).length) return
+
+                this[' in']  = 'a'
+                this[' out'] = 'b'
+            }
+
+            var arr = JSON.parse(localStorage[this[' in']])
+
+            if (arr.length <= this[' idx']) return
+            this.onmessage && this.onmessage({ data: arr[this[' idx']] });
+            this[' idx']++;
+        }.bind(this), 20);
+        setTimeout(function () { this.onopen && this.onopen({}) }.bind(this))
+    }
+
+    LocalBroker.prototype = {
+        send: function(msg) {
+            if (!this[' out']) {
+                this[' out'] = 'a'
+                this[' in']  = 'b'
+            }
+            var arr = JSON.parse(localStorage[this[' out']])
+
+            arr.push(msg)
+            localStorage[this[' out']] = JSON.stringify(arr)
+        },
+        onmessage: function (e) {
+            var msg = e.data
+
+            msg.sdp && this[' localPeer'].setRemoteDescription(new RTCSessionDescription(msg.sdp)).then(function () {
+                     this[' localPeer'].signalingState == 'stable'
+                     || this[' localPeer'].createAnswer()
+                        .then(function (answer) { return this[' localPeer'].setLocalDescription(answer) }.bind(this))
+                        .then(function () { this.send({ sdp: this[' localPeer'].localDescription }) }.bind(this))
+                }.bind(this))
+            || msg.candidate && this[' localPeer'].addIceCandidate(new RTCIceCandidate(msg.candidate))
+        },
+        close: function() {
+            clearInterval(this[' intv'])
+            localStorage.a = localStorage.b = JSON.stringify([]);
+        }
+    }
+
+    // Module-API
+    return {
+        /**
+         * Realizes a broker between two peers over the local storage
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.LocalBroker"
+         * @returns  {LocalBroker}
+         */
+        create: function (peer) {
+            return new LocalBroker(peer)
+        }
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2024 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ *
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.FightEmitterLocal" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/service/FightEmitterLocal',['direzione-lib/service/LocalBroker'], factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./LocalBroker'))
+    } else {
+        root.Direzione = root.Direzione || {};
+        root.Direzione.FightEmitterLocal = factory(root.Direzione.LocalBroker)
+    }
+}(this, function (broker) {
+
+    var eventTypes = ['disconnect', 'establish']
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param   {String}  receiverID
+     * @param   {Fight}   fight
+     *
+     * @borrows <anonymous>~_connect as connect
+     * @borrows <anonymous>~_registerEventListener as on
+     */
+    function FightEmitterLocal(receiverID, fight) {
+
+        this[' localPeer']  = new RTCPeerConnection()
+        this[' fight']      = fight
+        this[' receiverID'] = receiverID
+        this[' connected']  = false
+        this[' conn']       = false
+        this[' listener']   = {disconnect: [], establish: []}
+
+        _initBroker.call(this)
+        _registerFightHandlers.call(this)
+    }
+    FightEmitterLocal.prototype = {
+        connect:     _connect,
+        disconnect:  _disconnect,
+        isConnected: function () {
+            return this[' connected']
+        },
+        on: _registerEventListener,
+        getFight: function () {
+            return this[' fight']
+        },
+        replaceFight: function (fight) {
+            this.disconnect()
+            this[' fight'].clearListeners()
+            delete this[' fight']
+            this[' fight'] = fight
+            _registerFightHandlers.call(this)
+        }
+    }
+
+    /**
+     * Returns whether the connection to a FightReceiver is established
+     *
+     * @method  FightEmitterLocal#isConnected
+     * @public
+     * @returns {Boolean}
+     */
+
+    /**
+     * Returns the fight
+     *
+     * @method FightEmitterLocal#getFight
+     * @public
+     */
+
+    /**
+     * Replaces the fight of this emitter and emits the new object
+     *
+     * @method FightEmitterLocal#replaceFight
+     * @public
+     */
+
+    /**
+     *
+     * @private
+     */
+    function _initBroker() {
+        var b = broker.create(this[' localPeer'])
+        this[' broker'] = b
+
+        this[' localPeer'].onicecandidate      = function (e) { b.send({ candidate: e.candidate }) }
+        this[' localPeer'].onnegotiationneeded = function () {
+            this[' localPeer'].createOffer()
+                .then(function (offer) { return this[' localPeer'].setLocalDescription(offer); }.bind(this))
+                .then(function () { b.send({ sdp: this[' localPeer'].localDescription }) }.bind(this))
+        }.bind(this)
+    }
+
+    /**
+     * Emits fight over the connection, if established
+     *
+     * @private
+     */
+    function _emitFight() {
+        var cu;
+        function opponent4Emitter(side, opponent) {
+            return [
+                'new', side,
+                opponent.getPerson().getFirstName(),
+                opponent.getPerson().getLastName(),
+                opponent.getPerson().getClubName(),
+                opponent.getScore(),
+                opponent.getShido()
+            ]
+        }
+
+        _send.call(this, opponent4Emitter('white', this[' fight'].getWhiteOpponent()));
+        _send.call(this, opponent4Emitter('red',   this[' fight'].getRedOpponent()));
+        _send.call(this, [
+            'new', 'fight', this[' fight'].getTimeLeft(),
+            this[' fight'][' settings'].getCountUpLimit(),
+            this[' fight'][' settings'].getCountUpLimitIppon(),
+            this[' fight'][' settings'].isGripDisplayInverted(),
+            this[' fight'][' settings'].isGripSideInverted()
+        ]);
+        if (this[' fight'].isRunning()) {
+            _send.call(this, ['fight', 'startPauseResume', this[' fight'].getTimeLeft()])
+        }
+        if (cu = this[' fight'].getCountUp()) {
+            var status = cu.isComplete() ? 4 : cu.isStopped() ? 3 : cu.isPaused() ? 2 : 1
+            var side   = this[' fight'][' settings'].isGripSideInverted()
+                            ? this[' fight'].invertSide(cu.side) : cu.side
+            _send.call(this, ['new', 'countup', side, cu.get(), status])
+        }
+    }
+
+    /**
+     * Trys to disconnect from the connected FightReceiver
+     *
+     * @public
+     * @method  FightEmitterLocal#disconnect
+     */
+    function _disconnect() {
+        this[' connected'] && this[' conn'].close()
+    }
+
+    /**
+     * Trys to connect to a FightReceiver with given ID
+     *
+     * @public
+     * @method  FightEmitterLocal#connect
+     * @fires   FightEmitterLocal#establish
+     * @fires   FightEmitterLocal#disconnect
+     * @returns {Promise}
+     */
+    function _connect() {
+        var deferred = {resolve: null, reject: null};
+        deferred.promise = new Promise(function (resolve, reject) {
+            deferred.resolve = resolve
+            deferred.reject  = reject
+        })
+
+        this[' conn'] = this[' localPeer'].createDataChannel(this[' receiverID'])
+        this[' conn'].onopen = function() {
+            this[' connected'] = true
+            _emitFight.call(this)
+            this[' broker'].close()
+            _dispatch.call(this, 'establish', 'peer opened')
+            deferred.resolve()
+        }.bind(this)
+        this[' conn'].onclose = function() {
+            this[' connected'] = false
+            _dispatch.call(this, 'disconnect', 'peer closed')
+        }.bind(this)
+
+        return deferred.promise
+    }
+
+    /**
+     * Sends data over the connection, if established
+     *
+     * @private
+     */
+    function _send(data) {
+        this.isConnected() && this[' conn'].send(JSON.stringify(data))
+    }
+
+    /**
+     * Registers handlers that listening on events fired by components of the fight
+     *
+     * @private
+     */
+    function _registerFightHandlers() {
+        var red   = this[' fight'].getRedOpponent()
+        var white = this[' fight'].getWhiteOpponent()
+
+        this[' fight'].on('reset', function (ms) {
+            _send.call(this, ['fight', 'reset', ms])
+        }.bind(this))
+        this[' fight'].on('startPauseResume', function (ms) {
+            _send.call(this, ['fight', 'startPauseResume', ms])
+        }.bind(this))
+        this[' fight'].on('stop', function (data) {
+            _send.call(this, ['fight', 'stop', data[0], data[1], data[2]])
+        }.bind(this))
+        this[' fight'].on('toketa', function (ms) {
+            _send.call(this, ['fight', 'toketa', ms])
+        }.bind(this))
+        this[' fight'].on('osaeKomi', function (side) {
+            _send.call(this, ['fight', 'osaeKomi', side])
+        }.bind(this))
+        this[' fight'].on('removeCountUp', function () {
+            _send.call(this, ['fight', 'removeCountUp'])
+        }.bind(this))
+
+        red.on('add', function (what) {
+            _send.call(this, ['red', 'add'+what])
+        }.bind(this)).on('remove', function (what) {
+            _send.call(this, ['red', 'remove'+what])
+        }.bind(this))
+
+        white.on('add', function (what) {
+            _send.call(this, ['white', 'add'+what])
+        }.bind(this)).on('remove', function (what) {
+            _send.call(this, ['white', 'remove'+what])
+        }.bind(this))
+    }
+
+    /**
+     * Registers an event-listener to this object
+     *
+     * @public
+     * @method  FightEmitterLocal#on
+     * @param   {String} type
+     * @param   {Function} callback
+     */
+    function _registerEventListener(type, callback) {
+        if (eventTypes.indexOf(type) === -1) {
+            throw new RangeError(
+                'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
+            )
+        }
+
+        this[' listener'][type].push(callback)
+
+        return this
+    }
+
+    /**
+     * Notifies all listeners of passed event-type.
+     *
+     * @private
+     * @param {String} type
+     * @param {*} data
+     */
+    function _dispatch(type, data) {
+        this[' listener'][type].forEach(function (listener) {
+            listener.call(this, data)
+        }, this)
+    }
+
+    /**
+     * Will be fired when peer connection was disconnected
+     * @event FightEmitterLocal#disconnect
+     */
+
+    /**
+     * Will be fired when peer connection has been established
+     * @event FightEmitterLocal#establish
+     */
+
+    // Module-API
+    return {
+        /**
+         * Creates an object to emit fight events to a receiver.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.FightEmitterLocal"
+         * @param   {String} receiverID
+         * @param   {Fight}  fight
+         * @returns {FightEmitterLocal}
+         */
+        create: function (receiverID, fight) {
+            return new FightEmitterLocal(receiverID, fight)
+        }
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2024 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ *
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.FightReceiverLocal" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/service/FightReceiverLocal',[
+            'direzione-lib/service/LocalBroker',
+            'direzione-lib/model/Fight',
+            'direzione-lib/config/FightSettings',
+            'direzione-lib/model/Opponent',
+            'direzione-lib/model/Person',
+            'direzione-lib/view/Scoreboard'
+        ], factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(
+            require('./LocalBroker'),
+            require('../model/Fight'),
+            require('../config/FightSettings'),
+            require('../model/Opponent'),
+            require('../model/Person'),
+            require('../view/Scoreboard')
+        )
+    } else {
+        root.Direzione = root.Direzione || {};
+        root.Direzione.FightReceiverLocal = factory(
+            root.Direzione.LocalBroker,
+            root.Direzione.Fight,
+            root.Direzione.FightSettings,
+            root.Direzione.Opponent,
+            root.Direzione.Person,
+            root.Direzione.Scoreboard
+        )
+    }
+}(this, function (broker, Fight, FightSettings, Opponent, Person, Scoreboard) {
+
+    var eventTypes = ['disconnect', 'establish']
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param   {String} receiverID
+     * @param   {Object} viewConfig
+     *
+     * @borrows <anonymous>~_registerEventListener as on
+     */
+    function FightReceiverLocal(receiverID, viewConfig) {
+
+        this[' localPeer']     = new RTCPeerConnection()
+        this[' receiverID']    = receiverID
+        this[' connected']     = false
+        this[' conn']          = false
+        this[' viewConfig']    = viewConfig
+        this[' listener']      = {disconnect: [], establish: []}
+        this[' redOpponent']   = null
+        this[' whiteOpponent'] = null
+        this[' fight']         = null
+        this[' board']         = null
+
+        _initBroker.call(this)
+        _listen.call(this)
+    }
+    FightReceiverLocal.prototype = {
+        isConnected: function () {
+            return this[' connected']
+        },
+        on: _registerEventListener
+    }
+
+    /**
+     * Returns whether the connection to a FightReceiver is established
+     *
+     * @method  FightReceiverLocal#isConnected
+     * @public
+     * @returns {Boolean}
+     */
+
+
+    /**
+     *
+     * @private
+     */
+    function _initBroker() {
+        var b = broker.create(this[' localPeer'])
+        this[' broker'] = b
+
+        this[' localPeer'].onicecandidate      = function (e) { b.send({ candidate: e.candidate }) }
+        this[' localPeer'].onnegotiationneeded = function () {
+            this[' localPeer'].createOffer()
+                .then(function (offer) { return this[' localPeer'].setLocalDescription(offer); }.bind(this))
+                .then(function () { b.send({ sdp: this[' localPeer'].localDescription }) }.bind(this))
+        }.bind(this)
+    }
+
+    /**
+     * Handles data coming from FightEmitter
+     *
+     * @private
+     * @param {String} type
+     * @param {*} data
+     */
+    function _onData(data) {
+        if (data[0] === 'new') {
+            switch (data[1]) {
+                case 'red':   return this[' redOpponent']   =
+                    Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
+                case 'white': return this[' whiteOpponent'] =
+                    Opponent.create(Person.create(data[2], data[3], data[4]), data[5], data[6])
+                case 'fight':
+                    var settings = FightSettings.create()
+                    settings
+                        .setDuration(data[2])
+                        .setCountUpLimit(data[3])
+                        .setCountUpLimitIppon(data[4])
+                        .setGripDisplayInverted(data[5])
+                        .setGripSideInverted(data[6])
+                    this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
+                    this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
+                return
+                case 'countup':
+                    this[' fight'].osaeKomi(data[2], data[3])
+                    if ([4, 3, 2].indexOf(data[4]) !== -1) return this[' fight'].toketa(data[3])
+                return
+            }
+        }
+
+        switch (data[0]) {
+            case 'fight': return this[' fight'][data[1]](
+                (3 <= data.length ? data[2] : undefined),
+                (4 <= data.length ? data[3] : undefined),
+                (5 <= data.length ? data[4] : undefined)
+            )
+            case 'red':   return this[' redOpponent'][data[1]]()
+            case 'white': return this[' whiteOpponent'][data[1]]()
+        }
+    }
+
+    /**
+     * Listens to the connection expected from FightEmitter
+     *
+     * @private
+     * @fires   FightReceiverLocal#establish
+     * @fires   FightReceiverLocal#disconnect
+     * @param   {String} type
+     * @param   {*} data
+     */
+    function _listen() {
+
+        this[' localPeer'].ondatachannel = function (e) {
+            this[' conn'] = e.channel;
+            this[' conn'].onmessage = function (e) {
+                _onData.call(this, JSON.parse(e.data))
+            }.bind(this)
+            this[' conn'].onopen = function() {
+                this[' connected'] = true
+                this[' broker'].close()
+                _dispatch.call(this, 'establish', 'peer opened')
+            }.bind(this)
+            this[' conn'].onclose = function() {
+                this[' connected'] = false
+                this[' board'].shutdown()
+                _dispatch.call(this, 'disconnect', 'peer closed')
+            }.bind(this)
+        }.bind(this)
+    }
+
+    /**
+     * Will be fired when peer connection was disconnected
+     * @event FightReceiverLocal#disconnect
+     */
+
+    /**
+     * Will be fired when peer connection has been established
+     * @event FightReceiverLocal#establish
+     */
+
+    /**
+     * Registers an event-listener to this object
+     *
+     * @public
+     * @method  FightReceiverLocal#on
+     * @param   {String} type
+     * @param   {Function} callback
+     */
+    function _registerEventListener(type, callback) {
+        if (eventTypes.indexOf(type) === -1) {
+            throw new RangeError(
+                'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
+            )
+        }
+
+        this[' listener'][type].push(callback)
+
+        return this
+    }
+
+    /**
+     * Notifies all listeners of passed event-type.
+     *
+     * @private
+     * @param {String} type
+     * @param {*} data
+     */
+    function _dispatch(type, data) {
+        this[' listener'][type].forEach(function (listener) {
+            listener.call(this, data)
+        }, this)
+    }
+
+    // Module-API
+    return {
+        /**
+         * Creates an object to receive scoreboard events from a emitter scoreboard.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.FightReceiverLocal"
+         * @param   {String} receiverID
+         * @param   {Object} viewConfig
+         * @returns {FightReceiverLocal}
+         */
+        create: function (receiverID, viewConfig) {
+            return new FightReceiverLocal(receiverID, viewConfig)
+        }
     }
 }))
 ;

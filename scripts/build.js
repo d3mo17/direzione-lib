@@ -35,6 +35,9 @@ rjs.optimize({
       'direzione-lib/model/Tournament',
       'direzione-lib/service/FightEmitter',
       'direzione-lib/service/FightReceiver',
+      'direzione-lib/service/LocalBroker',
+      'direzione-lib/service/FightEmitterLocal',
+      'direzione-lib/service/FightReceiverLocal',
       'direzione-lib/util/Utils',
       'direzione-lib/view/Repertoire',
       'direzione-lib/view/Scoreboard'

@@ -1,7 +1,7 @@
 /**
  * A library of components that can be used to manage a martial arts tournament
  *
- * Copyright (C) 2023 Daniel Moritz
+ * Copyright (C) 2024 Daniel Moritz
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,17 @@
  *
  * @returns {Object}
  */
-/** @namespace "Direzione.FightEmitter" */
+/** @namespace "Direzione.FightEmitterLocal" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['peerjs/dist/peerjs.min'], factory)
+        define(['direzione-lib/service/LocalBroker'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('peerjs'))
+        module.exports = factory(require('./LocalBroker'))
     } else {
         root.Direzione = root.Direzione || {};
-        root.Direzione.FightEmitter = factory(root.peerjs)
+        root.Direzione.FightEmitterLocal = factory(root.Direzione.LocalBroker)
     }
-}(this, function (peerjs) {
+}(this, function (broker) {
 
     var eventTypes = ['disconnect', 'establish']
 
@@ -44,25 +44,23 @@
      *
      * @param   {String}  receiverID
      * @param   {Fight}   fight
-     * @param   {Array}   servers
      *
      * @borrows <anonymous>~_connect as connect
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function FightEmitter(receiverID, fight, servers) {
-        var servers = servers || []
-        var options = servers.length < 1 ? {} : {config: {iceServers: servers}}
+    function FightEmitterLocal(receiverID, fight) {
 
-        this[' localPeer']  = new peerjs.Peer(options)
+        this[' localPeer']  = new RTCPeerConnection()
         this[' fight']      = fight
         this[' receiverID'] = receiverID
         this[' connected']  = false
         this[' conn']       = false
         this[' listener']   = {disconnect: [], establish: []}
 
+        _initBroker.call(this)
         _registerFightHandlers.call(this)
     }
-    FightEmitter.prototype = {
+    FightEmitterLocal.prototype = {
         connect:     _connect,
         disconnect:  _disconnect,
         isConnected: function () {
@@ -84,7 +82,7 @@
     /**
      * Returns whether the connection to a FightReceiver is established
      *
-     * @method  FightEmitter#isConnected
+     * @method  FightEmitterLocal#isConnected
      * @public
      * @returns {Boolean}
      */
@@ -92,16 +90,32 @@
     /**
      * Returns the fight
      *
-     * @method FightEmitter#getFight
+     * @method FightEmitterLocal#getFight
      * @public
      */
 
     /**
      * Replaces the fight of this emitter and emits the new object
      *
-     * @method FightEmitter#replaceFight
+     * @method FightEmitterLocal#replaceFight
      * @public
      */
+
+    /**
+     *
+     * @private
+     */
+    function _initBroker() {
+        var b = broker.create(this[' localPeer'])
+        this[' broker'] = b
+
+        this[' localPeer'].onicecandidate      = function (e) { b.send({ candidate: e.candidate }) }
+        this[' localPeer'].onnegotiationneeded = function () {
+            this[' localPeer'].createOffer()
+                .then(function (offer) { return this[' localPeer'].setLocalDescription(offer); }.bind(this))
+                .then(function () { b.send({ sdp: this[' localPeer'].localDescription }) }.bind(this))
+        }.bind(this)
+    }
 
     /**
      * Emits fight over the connection, if established
@@ -145,7 +159,7 @@
      * Trys to disconnect from the connected FightReceiver
      *
      * @public
-     * @method  FightEmitter#disconnect
+     * @method  FightEmitterLocal#disconnect
      */
     function _disconnect() {
         this[' connected'] && this[' conn'].close()
@@ -155,9 +169,9 @@
      * Trys to connect to a FightReceiver with given ID
      *
      * @public
-     * @method  FightEmitter#connect
-     * @fires   FightEmitter#establish
-     * @fires   FightEmitter#disconnect
+     * @method  FightEmitterLocal#connect
+     * @fires   FightEmitterLocal#establish
+     * @fires   FightEmitterLocal#disconnect
      * @returns {Promise}
      */
     function _connect() {
@@ -167,17 +181,18 @@
             deferred.reject  = reject
         })
 
-        this[' conn'] = this[' localPeer'].connect(this[' receiverID'])
-        this[' conn'].on('open', function() {
+        this[' conn'] = this[' localPeer'].createDataChannel(this[' receiverID'])
+        this[' conn'].onopen = function() {
             this[' connected'] = true
             _emitFight.call(this)
+            this[' broker'].close()
             _dispatch.call(this, 'establish', 'peer opened')
             deferred.resolve()
-        }.bind(this))
-        this[' conn'].on('close', function() {
+        }.bind(this)
+        this[' conn'].onclose = function() {
             this[' connected'] = false
             _dispatch.call(this, 'disconnect', 'peer closed')
-        }.bind(this))
+        }.bind(this)
 
         return deferred.promise
     }
@@ -188,7 +203,7 @@
      * @private
      */
     function _send(data) {
-        this.isConnected() && this[' conn'].send(data)
+        this.isConnected() && this[' conn'].send(JSON.stringify(data))
     }
 
     /**
@@ -236,7 +251,7 @@
      * Registers an event-listener to this object
      *
      * @public
-     * @method  FightEmitter#on
+     * @method  FightEmitterLocal#on
      * @param   {String} type
      * @param   {Function} callback
      */
@@ -267,12 +282,12 @@
 
     /**
      * Will be fired when peer connection was disconnected
-     * @event FightEmitter#disconnect
+     * @event FightEmitterLocal#disconnect
      */
 
     /**
      * Will be fired when peer connection has been established
-     * @event FightEmitter#establish
+     * @event FightEmitterLocal#establish
      */
 
     // Module-API
@@ -282,13 +297,13 @@
          *
          * @static
          * @method   create
-         * @memberof "Direzione.FightEmitter"
+         * @memberof "Direzione.FightEmitterLocal"
          * @param   {String} receiverID
          * @param   {Fight}  fight
-         * @returns {FightEmitter}
+         * @returns {FightEmitterLocal}
          */
         create: function (receiverID, fight) {
-            return new FightEmitter(receiverID, fight)
+            return new FightEmitterLocal(receiverID, fight)
         }
     }
 }))
