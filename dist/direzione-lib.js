@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.17.0
+ * Direzione Library v0.17.1
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -602,12 +602,11 @@
      * @private
      */
     function _toketa(forceMS) {
-        if (!this.isStopped() && _countUpExists.call(this)) {
-            if (typeof forceMS !== 'undefined') {
-                _newCountUp.call(this, this[' countup'].side, forceMS)
-            }
-            this[' countup'].pause('toketa')
+        if (typeof forceMS !== 'undefined') {
+            _newCountUp.call(this, this[' countup'].side, forceMS)
         }
+
+        _countUpExists.call(this) && this[' countup'].pause('toketa')
     }
 
     /**
