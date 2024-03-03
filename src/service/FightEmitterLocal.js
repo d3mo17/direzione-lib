@@ -34,8 +34,6 @@
     }
 }(this, function (broker) {
 
-    var eventTypes = ['disconnect', 'establish']
-
     /**
      * @class
      * @hideconstructor
@@ -256,6 +254,7 @@
      * @param   {Function} callback
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'

@@ -33,8 +33,6 @@
     }
 }(this, function () {
 
-    var eventTypes = ['add', 'remove', 'reset']
-
     /**
      * @class
      * @hideconstructor
@@ -155,6 +153,7 @@
      * @public
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
