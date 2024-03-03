@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.17.2
+ * Direzione Library v0.18
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -183,7 +183,7 @@
             ? false : FightHistory.create(this)
 
         this[' stopped']  = false
-        this[' listener'] = { reset: [], startPauseResume: [], osaeKomi: [], stop: [], toketa: [], removeCountUp: [] }
+        this[' listener'] = { reset: [], startPauseResume: [], osaeKomi: [], stop: [], toketa: [], removeCountUp: [], timeUp: [] }
     }
 
 
@@ -443,7 +443,10 @@
         if (typeof forceMS !== 'undefined') return
 
         this[' countdown']
-            .on('complete', _stop.bind(this))
+            .on('complete', function () {
+                _stop.call(this)
+                _dispatch.call(this, 'timeUp')
+            })
             .on('pause', _toketa.bind(this, undefined))
     }
 
@@ -513,6 +516,7 @@
         }.bind(this)).on('complete', function () {
             if (this[' ' + this[' countup'].side + 'Opponent'].getScore() !== 0) {
                 ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
+                _dispatch.call(this, 'timeUp')
             } else {
                 this[' countup'].stop('replace')
                 _newCountUp.call(this, this[' countup'].side, countUp_ms)
@@ -520,6 +524,7 @@
                     _dispatch.call(this, 'toketa', this[' countup'].get())
                 }.bind(this)).on('complete', function () {
                     ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
+                    _dispatch.call(this, 'timeUp')
                 }.bind(this))
             }
         }.bind(this))
@@ -879,8 +884,6 @@
     }
 }(this, function () {
 
-    var eventTypes = ['add', 'remove', 'reset']
-
     /**
      * @class
      * @hideconstructor
@@ -1001,6 +1004,7 @@
      * @public
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
@@ -1917,8 +1921,6 @@
     }
 }(this, function (peerjs) {
 
-    var eventTypes = ['disconnect', 'establish']
-
     /**
      * @class
      * @hideconstructor
@@ -2124,6 +2126,7 @@
      * @param   {Function} callback
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
@@ -2232,8 +2235,6 @@
         )
     }
 }(this, function (peerjs, Fight, FightSettings, Opponent, Person, Scoreboard) {
-
-    var eventTypes = ['disconnect', 'establish']
 
     /**
      * @class
@@ -2367,6 +2368,7 @@
      * @param   {Function} callback
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
@@ -2771,8 +2773,6 @@
     }
 }(this, function (broker) {
 
-    var eventTypes = ['disconnect', 'establish']
-
     /**
      * @class
      * @hideconstructor
@@ -2993,6 +2993,7 @@
      * @param   {Function} callback
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
@@ -3101,8 +3102,6 @@
         )
     }
 }(this, function (broker, Fight, FightSettings, Opponent, Person, Scoreboard) {
-
-    var eventTypes = ['disconnect', 'establish']
 
     /**
      * @class
@@ -3254,6 +3253,7 @@
      * @param   {Function} callback
      */
     function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
         if (eventTypes.indexOf(type) === -1) {
             throw new RangeError(
                 'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'

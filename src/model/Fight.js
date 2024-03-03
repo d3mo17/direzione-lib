@@ -64,7 +64,7 @@
             ? false : FightHistory.create(this)
 
         this[' stopped']  = false
-        this[' listener'] = { reset: [], startPauseResume: [], osaeKomi: [], stop: [], toketa: [], removeCountUp: [] }
+        this[' listener'] = { reset: [], startPauseResume: [], osaeKomi: [], stop: [], toketa: [], removeCountUp: [], timeUp: [] }
     }
 
 
@@ -324,7 +324,10 @@
         if (typeof forceMS !== 'undefined') return
 
         this[' countdown']
-            .on('complete', _stop.bind(this))
+            .on('complete', function () {
+                _stop.call(this)
+                _dispatch.call(this, 'timeUp')
+            })
             .on('pause', _toketa.bind(this, undefined))
     }
 
@@ -394,6 +397,7 @@
         }.bind(this)).on('complete', function () {
             if (this[' ' + this[' countup'].side + 'Opponent'].getScore() !== 0) {
                 ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
+                _dispatch.call(this, 'timeUp')
             } else {
                 this[' countup'].stop('replace')
                 _newCountUp.call(this, this[' countup'].side, countUp_ms)
@@ -401,6 +405,7 @@
                     _dispatch.call(this, 'toketa', this[' countup'].get())
                 }.bind(this)).on('complete', function () {
                     ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
+                    _dispatch.call(this, 'timeUp')
                 }.bind(this))
             }
         }.bind(this))
