@@ -148,7 +148,7 @@
      * @method  FightEmitter#disconnect
      */
     function _disconnect() {
-        this[' connected'] && this[' conn'].close()
+        return this[' connected'] && this[' conn'].close() || true
     }
 
     /**

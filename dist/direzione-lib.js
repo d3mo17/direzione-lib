@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.17.1
+ * Direzione Library v0.17.2
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -2031,7 +2031,7 @@
      * @method  FightEmitter#disconnect
      */
     function _disconnect() {
-        this[' connected'] && this[' conn'].close()
+        return this[' connected'] && this[' conn'].close() || true
     }
 
     /**
@@ -2899,7 +2899,7 @@
      * @method  FightEmitterLocal#disconnect
      */
     function _disconnect() {
-        this[' connected'] && this[' conn'].close()
+        return this[' connected'] && this[' conn'].close() || true
     }
 
     /**
