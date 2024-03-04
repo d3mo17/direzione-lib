@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.18
+ * Direzione Library v0.18.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
