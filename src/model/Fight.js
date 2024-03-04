@@ -317,18 +317,19 @@
     function _newCountDown(forceMS) {
         var local_ms = typeof forceMS !== 'undefined' ? forceMS : this[' settings'].getDuration()
         _countdownExists.call(this) && this[' countdown'].stop('dirty')
-        this[' countdown'] = Durata.create(local_ms, 0, local_ms).on('resume', _removeCountUp.bind(this))
+        this[' countdown'] = Durata.create(local_ms, 0, local_ms)
+                                .on('resume', _removeCountUp.bind(this))
+                                .on('pause', function (reason) {
+                                    reason === 'osaekomi-timeup' && _dispatch.call(this, 'timeUp')
+                                }.bind(this))
 
         // do not register event listeners, if milliseconds were passed, because this means the
         // fight is controlled from the outside were the logic happens
         if (typeof forceMS !== 'undefined') return
 
         this[' countdown']
-            .on('complete', function () {
-                _stop.call(this)
-                _dispatch.call(this, 'timeUp')
-            })
-            .on('pause', _toketa.bind(this, undefined))
+            .on('complete', _dispatch.bind(this, 'timeUp'))
+            .on('pause',    _toketa.bind(this, undefined))
     }
 
     /**
@@ -397,7 +398,6 @@
         }.bind(this)).on('complete', function () {
             if (this[' ' + this[' countup'].side + 'Opponent'].getScore() !== 0) {
                 ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
-                _dispatch.call(this, 'timeUp')
             } else {
                 this[' countup'].stop('replace')
                 _newCountUp.call(this, this[' countup'].side, countUp_ms)
@@ -405,7 +405,6 @@
                     _dispatch.call(this, 'toketa', this[' countup'].get())
                 }.bind(this)).on('complete', function () {
                     ! this[' countdown'].isPaused() && this[' countdown'].pause('osaekomi-timeup')
-                    _dispatch.call(this, 'timeUp')
                 }.bind(this))
             }
         }.bind(this))

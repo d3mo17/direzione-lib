@@ -33,7 +33,7 @@
     }
 }(this, function (Fight) {
 
-    var SETTINGS  = ['duration', 'countUpLimit', 'countUpLimitIppon', 'personLockOut']
+    var SETTINGS  = ['duration', 'countUpLimit', 'countUpLimitIppon', 'personLockOut', 'timeUpSoundFile']
 
     /**
      * @class
@@ -51,6 +51,7 @@
         this.personLockOut     = Fight.LOCK_OUT
         this.invertGripDisplay = false
         this.invertGripSide    = false
+        this.timeUpSoundFile   = ''
 
         this.fromStorage()
         this.fromURLParameters()
@@ -66,6 +67,7 @@
         getLockOutTime:        function () { return this.personLockOut },
         isGripDisplayInverted: function () { return this.invertGripDisplay },
         isGripSideInverted:    function () { return this.invertGripSide },
+        getTimeUpSoundFile:    function () { return this.timeUpSoundFile },
         setDuration: function (duration) {
             if (! Number.isInteger(duration)) {
                 throw TypeError('Duration has to be of type integer')
@@ -100,6 +102,10 @@
         },
         setGripSideInverted: function (enable) {
             this.invertGripSide = !!enable
+            return this
+        },
+        setTimeUpSoundFile: function (filename) {
+            this.timeUpSoundFile = filename
             return this
         }
     }
