@@ -30,6 +30,7 @@ rjs.optimize({
       'direzione-lib/model/Fight',
       'direzione-lib/model/FightHistory',
       'direzione-lib/model/Opponent',
+      'direzione-lib/model/OpponentGroup',
       'direzione-lib/model/Person',
       'direzione-lib/model/Playlist',
       'direzione-lib/model/Tournament',

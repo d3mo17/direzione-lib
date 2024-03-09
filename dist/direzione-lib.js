@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.18.0
+ * Direzione Library v0.19.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -1166,6 +1166,122 @@
          */
         create: function (person, score, penalty) {
             return new Opponent(person, score, penalty)
+        }
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2024 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.OpponentGroup" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/model/OpponentGroup',factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory()
+    } else {
+        root.Direzione = root.Direzione || {}
+        root.Direzione.OpponentGroup = factory()
+    }
+}(this, function () {
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param {String} name
+     */
+    function OpponentGroup(name) {
+        this[' name'] = name
+        this[' persons'] = []
+
+        this[' listener'] = { add: [], remove: [] }
+    }
+
+    OpponentGroup.prototype = {
+        addPerson: function (person) {
+            _dispatch.call(this, 'add', person)
+            this[' persons'].push(person)
+        },
+        removePerson: function (person) {
+            _dispatch.call(this, 'remove', person)
+            this[' persons'] = this[' persons'].filter(function(obj) {
+                return obj !== person;
+            })
+        },
+        on: _registerEventListener,
+        getName: function () { return this[' name'] }
+    }
+
+    /**
+     * Registers an event-listener to this object
+     *
+     * @method  Opponent#on
+     * @param   {String} type
+     * @param   {Function} callback
+     * @public
+     */
+    function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
+        if (eventTypes.indexOf(type) === -1) {
+            throw new RangeError(
+                'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
+            )
+        }
+
+        this[' listener'][type].push(callback)
+
+        return this
+    }
+
+    /**
+     * Notifies all listeners of passed event-type.
+     *
+     * @private
+     * @param {String} type
+     * @param {*} data
+     */
+    function _dispatch(type, data) {
+        this[' listener'][type].forEach(function (listener) {
+            listener.call(this, data)
+        }, this)
+    }
+
+    // Module-API
+    return {
+        /**
+         * Creates an object to organize opponents in groups.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.OpponentGroup"
+         * @param    {String} name
+         * @returns  {OpponentGroup}
+         */
+        create: function (name) {
+            return new OpponentGroup(name)
         }
     }
 }))
@@ -2419,225 +2535,6 @@
 /**
  * A library of components that can be used to manage a martial arts tournament
  *
- * Copyright (C) 2023 Daniel Moritz
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, according to version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
- * @param   {Object} root
- * @param   {Function} factory
- *
- * @license GPL-3.0
- *
- * @returns {Object}
- */
-/** @namespace "Direzione.Repertoire" */
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/view/Repertoire',['direzione-lib/model/Playlist', 'direzione-lib/util/Utils'], factory)
-    } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Playlist'), require('../util/Utils'))
-    } else {
-        root.Direzione = root.Direzione || {}
-        root.Direzione.Repertoire = factory(root.Direzione.Playlist, root.Direzione.Utils)
-    }
-}(this, function (Playlist, Utils) {
-
-    /**
-     * @class
-     * @hideconstructor
-     * @global
-     * @private
-     *
-     * @param   {Playlist} playlistModel
-     * @param   {Object}   viewConfig
-     *
-     * @borrows <anonymous>~_connect as connect
-     * @borrows <anonymous>~_registerEventListener as on
-     */
-    function Repertoire(playlistModel, viewConfig) {
-        this[' playlist']        = playlistModel
-        this[' entryJig']        = viewConfig.entryJigElem.cloneNode(true)
-        this[' entryWrapper']    = viewConfig.entryWrapperElem
-        this[' cssWhiteName']    = viewConfig.selectorWhiteOpponentName || '.white'
-        this[' cssRedName']      = viewConfig.selectorRedOpponentName   || '.red'
-        this[' cssWhiteLockOut'] = viewConfig.selectorWhiteOpponentLockOut
-        this[' cssRedLockOut']   = viewConfig.selectorRedOpponentLockOut
-
-        viewConfig.entryJigElem.remove();
-
-        this[' entryJig'].removeAttribute('id')
-        _makeListVisual.call(this)
-        _animationLoop.call(this)
-    }
-
-    /**
-     * @private
-     */
-    function _animationLoop() {
-        this[' entryWrapper'].querySelectorAll('li').forEach(function (entry) {
-            if (typeof entry.fight === 'undefined') return
-
-            var lockOutWhite = entry.fight.getWhiteOpponent().getPerson().getLockOut()
-            var lockOutRed   = entry.fight.getRedOpponent().getPerson().getLockOut()
-            var loWhiteElem  = entry.querySelector(this[' cssWhiteLockOut'])
-            var loRedElem    = entry.querySelector(this[' cssRedLockOut'])
-
-            if (loWhiteElem) {
-                loWhiteElem.innerText = (! lockOutWhite || lockOutWhite.get() < 1)
-                    ? '-:--' : Utils.getMinSecDisplay(lockOutWhite.get())
-            }
-            if (loRedElem) {
-                loRedElem.innerText = (! lockOutRed || lockOutRed.get() < 1)
-                    ? '-:--' : Utils.getMinSecDisplay(lockOutRed.get())
-            }
-        }.bind(this))
-        requestAnimationFrame(_animationLoop.bind(this))
-    }
-
-    /**
-     * @private
-     */
-    function _makeListVisual() {
-        var fight, entry
-        this[' playlist'].reset()
-        while (fight = this[' playlist'].next()) {
-            entry = this[' entryJig'].cloneNode(true)
-            entry.fight = fight
-            entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
-            entry.querySelector(this[' cssRedName']).innerText   = fight.getRedOpponent().getFullName()
-
-            this[' entryWrapper'].appendChild(entry)
-        }
-    }
-
-    // Module-API
-    return {
-        /**
-         * Creates an object to update a scoreboard.
-         *
-         * @static
-         * @method   create
-         * @memberof "Direzione.Repertoire"
-         * @param   {Playlist} playlistModel
-         * @param   {Object} viewConfig
-         * @returns {Repertoire}
-         */
-        create: function (playlistModel, viewConfig) {
-            return new Repertoire(playlistModel, viewConfig)
-        }
-    };
-}));
-
-/**
- * A library of components that can be used to manage a martial arts tournament
- *
- * Copyright (C) 2023 Daniel Moritz
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, according to version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
- * @param   {Object} root
- * @param   {Function} factory
- * @license GPL-3.0
- *
- * @returns {Object}
- */
-/** @namespace "Direzione" */
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/model/Tournament',[
-            'direzione-lib/model/Fight',
-            'direzione-lib/model/FightHistory',
-            'direzione-lib/config/FightSettings',
-            'direzione-lib/model/Opponent',
-            'direzione-lib/model/Person',
-            'direzione-lib/view/Scoreboard',
-            'direzione-lib/service/FightEmitter',
-            'direzione-lib/service/FightReceiver',
-            'direzione-lib/model/Playlist',
-            'direzione-lib/view/Repertoire',
-            'direzione-lib/util/Utils'
-        ],factory)
-    } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(
-            require('./Fight'),
-            require('./FightHistory'),
-            require('../config/FightSettings'),
-            require('./Opponent'),
-            require('./Person'),
-            require('../view/Scoreboard'),
-            require('../service/FightEmitter'),
-            require('../service/FightReceiver'),
-            require('./Playlist'),
-            require('../view/Repertoire'),
-            require('../util/Utils')
-        )
-    } else {
-        root.Direzione = factory(
-            root.Direzione.Fight,
-            root.Direzione.FightHistory,
-            root.Direzione.FightSettings,
-            root.Direzione.Opponent,
-            root.Direzione.Person,
-            root.Direzione.Scoreboard,
-            root.Direzione.FightEmitter,
-            root.Direzione.FightReceiver,
-            root.Direzione.Playlist,
-            root.Direzione.Repertoire,
-            root.Direzione.Utils
-        )
-    }
-}(this, function (
-    Fight,
-    FightHistory,
-    FightSettings,
-    Opponent,
-    Person,
-    Scoreboard,
-    FightEmitter,
-    FightReceiver,
-    Playlist,
-    Repertoire,
-    Utils
-) {
-    // Module-API
-    return {
-        Fight:         Fight,
-        FightHistory:  FightHistory,
-        FightSettings: FightSettings,
-        Opponent:      Opponent,
-        Person:        Person,
-        Scoreboard:    Scoreboard,
-        FightEmitter:  FightEmitter,
-        FightReceiver: FightReceiver,
-        Playlist:      Playlist,
-        Repertoire:    Repertoire,
-        Utils:         Utils
-    }
-}))
-;
-/**
- * A library of components that can be used to manage a martial arts tournament
- *
  * Copyright (C) 2024 Daniel Moritz
  *
  * This program is free software: you can redistribute it and/or modify
@@ -3298,6 +3195,245 @@
         create: function (receiverID, viewConfig) {
             return new FightReceiverLocal(receiverID, viewConfig)
         }
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2023 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ *
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.Repertoire" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/view/Repertoire',['direzione-lib/model/Playlist', 'direzione-lib/util/Utils'], factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('../model/Playlist'), require('../util/Utils'))
+    } else {
+        root.Direzione = root.Direzione || {}
+        root.Direzione.Repertoire = factory(root.Direzione.Playlist, root.Direzione.Utils)
+    }
+}(this, function (Playlist, Utils) {
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param   {Playlist} playlistModel
+     * @param   {Object}   viewConfig
+     *
+     * @borrows <anonymous>~_connect as connect
+     * @borrows <anonymous>~_registerEventListener as on
+     */
+    function Repertoire(playlistModel, viewConfig) {
+        this[' playlist']        = playlistModel
+        this[' entryJig']        = viewConfig.entryJigElem.cloneNode(true)
+        this[' entryWrapper']    = viewConfig.entryWrapperElem
+        this[' cssWhiteName']    = viewConfig.selectorWhiteOpponentName || '.white'
+        this[' cssRedName']      = viewConfig.selectorRedOpponentName   || '.red'
+        this[' cssWhiteLockOut'] = viewConfig.selectorWhiteOpponentLockOut
+        this[' cssRedLockOut']   = viewConfig.selectorRedOpponentLockOut
+
+        viewConfig.entryJigElem.remove();
+
+        this[' entryJig'].removeAttribute('id')
+        _makeListVisual.call(this)
+        _animationLoop.call(this)
+    }
+
+    /**
+     * @private
+     */
+    function _animationLoop() {
+        this[' entryWrapper'].querySelectorAll('li').forEach(function (entry) {
+            if (typeof entry.fight === 'undefined') return
+
+            var lockOutWhite = entry.fight.getWhiteOpponent().getPerson().getLockOut()
+            var lockOutRed   = entry.fight.getRedOpponent().getPerson().getLockOut()
+            var loWhiteElem  = entry.querySelector(this[' cssWhiteLockOut'])
+            var loRedElem    = entry.querySelector(this[' cssRedLockOut'])
+
+            if (loWhiteElem) {
+                loWhiteElem.innerText = (! lockOutWhite || lockOutWhite.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutWhite.get())
+            }
+            if (loRedElem) {
+                loRedElem.innerText = (! lockOutRed || lockOutRed.get() < 1)
+                    ? '-:--' : Utils.getMinSecDisplay(lockOutRed.get())
+            }
+        }.bind(this))
+        requestAnimationFrame(_animationLoop.bind(this))
+    }
+
+    /**
+     * @private
+     */
+    function _makeListVisual() {
+        var fight, entry
+        this[' playlist'].reset()
+        while (fight = this[' playlist'].next()) {
+            entry = this[' entryJig'].cloneNode(true)
+            entry.fight = fight
+            entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
+            entry.querySelector(this[' cssRedName']).innerText   = fight.getRedOpponent().getFullName()
+
+            this[' entryWrapper'].appendChild(entry)
+        }
+    }
+
+    // Module-API
+    return {
+        /**
+         * Creates an object to update a scoreboard.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.Repertoire"
+         * @param   {Playlist} playlistModel
+         * @param   {Object} viewConfig
+         * @returns {Repertoire}
+         */
+        create: function (playlistModel, viewConfig) {
+            return new Repertoire(playlistModel, viewConfig)
+        }
+    };
+}));
+
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2023 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/model/Tournament',[
+            'direzione-lib/model/Fight',
+            'direzione-lib/model/FightHistory',
+            'direzione-lib/config/FightSettings',
+            'direzione-lib/model/Opponent',
+            'direzione-lib/model/OpponentGroup',
+            'direzione-lib/model/Person',
+            'direzione-lib/view/Scoreboard',
+            'direzione-lib/service/FightEmitter',
+            'direzione-lib/service/FightReceiver',
+            'direzione-lib/service/FightEmitterLocal',
+            'direzione-lib/service/FightReceiverLocal',
+            'direzione-lib/service/LocalBroker',
+            'direzione-lib/model/Playlist',
+            'direzione-lib/view/Repertoire',
+            'direzione-lib/util/Utils'
+        ],factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(
+            require('./Fight'),
+            require('./FightHistory'),
+            require('../config/FightSettings'),
+            require('./Opponent'),
+            require('./OpponentGroup'),
+            require('./Person'),
+            require('../view/Scoreboard'),
+            require('../service/FightEmitter'),
+            require('../service/FightReceiver'),
+            require('../service/FightEmitterLocal'),
+            require('../service/FightReceiverLocal'),
+            require('../service/LocalBroker'),
+            require('./Playlist'),
+            require('../view/Repertoire'),
+            require('../util/Utils')
+        )
+    } else {
+        root.Direzione = factory(
+            root.Direzione.Fight,
+            root.Direzione.FightHistory,
+            root.Direzione.FightSettings,
+            root.Direzione.Opponent,
+            root.Direzione.OpponentGroup,
+            root.Direzione.Person,
+            root.Direzione.Scoreboard,
+            root.Direzione.FightEmitter,
+            root.Direzione.FightReceiver,
+            root.Direzione.FightEmitterLocal,
+            root.Direzione.FightReceiverLocal,
+            root.Direzione.LocalBroker,
+            root.Direzione.Playlist,
+            root.Direzione.Repertoire,
+            root.Direzione.Utils
+        )
+    }
+}(this, function (
+    Fight,
+    FightHistory,
+    FightSettings,
+    Opponent,
+    OpponentGroup,
+    Person,
+    Scoreboard,
+    FightEmitter,
+    FightReceiver,
+    FightEmitterLocal,
+    FightReceiverLocal,
+    LocalBroker,
+    Playlist,
+    Repertoire,
+    Utils
+) {
+    // Module-API
+    return {
+        Fight:              Fight,
+        FightHistory:       FightHistory,
+        FightSettings:      FightSettings,
+        Opponent:           Opponent,
+        OpponentGroup:      OpponentGroup,
+        Person:             Person,
+        Scoreboard:         Scoreboard,
+        FightEmitter:       FightEmitter,
+        FightReceiver:      FightReceiver,
+        FightEmitterLocal:  FightEmitterLocal,
+        FightReceiverLocal: FightReceiverLocal,
+        LocalBroker:        LocalBroker,
+        Playlist:           Playlist,
+        Repertoire:         Repertoire,
+        Utils:              Utils
     }
 }))
 ;
