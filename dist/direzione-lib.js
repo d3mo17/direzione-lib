@@ -3261,12 +3261,27 @@
         _makeListVisual.call(this)
         _animationLoop.call(this)
     }
+    Repertoire.prototype = {
+        refresh: function () {
+            _emptyEntryWrapperElement.call(this)
+            _makeListVisual.call(this)
+        }
+    }
+
+    /**
+     * @private
+     */
+    function _emptyEntryWrapperElement() {
+        this[' entryWrapper'].childNodes.forEach(function (entry) {
+            entry.remove()
+        })
+    }
 
     /**
      * @private
      */
     function _animationLoop() {
-        this[' entryWrapper'].querySelectorAll('li').forEach(function (entry) {
+        this[' entryWrapper'].querySelectorAll(this[' entryJig'].tagName).forEach(function (entry) {
             if (typeof entry.fight === 'undefined') return
 
             var lockOutWhite = entry.fight.getWhiteOpponent().getPerson().getLockOut()
