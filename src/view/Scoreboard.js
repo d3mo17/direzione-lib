@@ -91,8 +91,8 @@
         hideNames: function () {
             this[' outputElems'].whiteOpponent.innerText = ''
             this[' outputElems'].redOpponent.innerText   = ''
-            this[' outputElems'].whiteClub.innerText   = ''
-            this[' outputElems'].redClub.innerText     = ''
+            this[' outputElems'].whiteClub.innerText     = ''
+            this[' outputElems'].redClub.innerText       = ''
         },
         shutdown: function () {
             this.stop()

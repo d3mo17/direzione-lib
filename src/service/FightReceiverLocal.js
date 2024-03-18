@@ -79,6 +79,8 @@
         this[' fight']         = null
         this[' board']         = null
 
+        this[' initValMemCountdown'] = viewConfig.outputElemCountdown.innerText
+
         _initBroker.call(this)
         _listen.call(this)
     }
@@ -136,6 +138,7 @@
                         .setCountUpLimitIppon(data[4])
                         .setGripDisplayInverted(data[5])
                         .setGripSideInverted(data[6])
+                    this[' viewConfig'].outputElemCountdown.innerText = this[' initValMemCountdown']
                     this[' fight'] = Fight.create(settings, this[' whiteOpponent'], this[' redOpponent'], true)
                     this[' board'] = Scoreboard.create(this[' fight'], this[' viewConfig'])
                 return
