@@ -39,6 +39,7 @@ rjs.optimize({
       'direzione-lib/service/LocalBroker',
       'direzione-lib/service/FightEmitterLocal',
       'direzione-lib/service/FightReceiverLocal',
+      'direzione-lib/util/RoundRobinTournamentIterator',
       'direzione-lib/util/Utils',
       'direzione-lib/view/Repertoire',
       'direzione-lib/view/Scoreboard'

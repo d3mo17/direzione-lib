@@ -39,7 +39,8 @@
             'direzione-lib/service/LocalBroker',
             'direzione-lib/model/Playlist',
             'direzione-lib/view/Repertoire',
-            'direzione-lib/util/Utils'
+            'direzione-lib/util/Utils',
+            'direzione-lib/util/RoundRobinTournamentIterator'
         ],factory)
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory(
@@ -57,7 +58,8 @@
             require('../service/LocalBroker'),
             require('./Playlist'),
             require('../view/Repertoire'),
-            require('../util/Utils')
+            require('../util/Utils'),
+            require('../util/RoundRobinTournamentIterator')
         )
     } else {
         root.Direzione = factory(
@@ -75,7 +77,8 @@
             root.Direzione.LocalBroker,
             root.Direzione.Playlist,
             root.Direzione.Repertoire,
-            root.Direzione.Utils
+            root.Direzione.Utils,
+            root.Direzione.RoundRobinTournamentIterator
         )
     }
 }(this, function (
@@ -93,24 +96,26 @@
     LocalBroker,
     Playlist,
     Repertoire,
-    Utils
+    Utils,
+    RoundRobinTournamentIterator
 ) {
     // Module-API
     return {
-        Fight:              Fight,
-        FightHistory:       FightHistory,
-        FightSettings:      FightSettings,
-        Opponent:           Opponent,
-        OpponentGroup:      OpponentGroup,
-        Person:             Person,
-        Scoreboard:         Scoreboard,
-        FightEmitter:       FightEmitter,
-        FightReceiver:      FightReceiver,
-        FightEmitterLocal:  FightEmitterLocal,
-        FightReceiverLocal: FightReceiverLocal,
-        LocalBroker:        LocalBroker,
-        Playlist:           Playlist,
-        Repertoire:         Repertoire,
-        Utils:              Utils
+        Fight:                        Fight,
+        FightHistory:                 FightHistory,
+        FightSettings:                FightSettings,
+        Opponent:                     Opponent,
+        OpponentGroup:                OpponentGroup,
+        Person:                       Person,
+        Scoreboard:                   Scoreboard,
+        FightEmitter:                 FightEmitter,
+        FightReceiver:                FightReceiver,
+        FightEmitterLocal:            FightEmitterLocal,
+        FightReceiverLocal:           FightReceiverLocal,
+        LocalBroker:                  LocalBroker,
+        Playlist:                     Playlist,
+        Repertoire:                   Repertoire,
+        Utils:                        Utils,
+        RoundRobinTournamentIterator: RoundRobinTournamentIterator
     }
 }))
