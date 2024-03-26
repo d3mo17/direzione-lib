@@ -58,6 +58,7 @@
     }
 
     Playlist.prototype = {
+        empty:    _empty,
         find:     _find,
         insert:   _insert,
         includes: _includes,
@@ -106,17 +107,34 @@
             this[' list'] = undefined
         }
 
+    /**
+     * Empty paylist
+     *
+     * @method Playlist#empty
+     * @return {Playlist} - Returns the Playlist instance which this method is called
+     * @public
+     */
+    function _empty() {
+        var fight
 
-   /**
-    * Adds a fight object right after the cursor node of the playlist and returns
-    * the new length of the list
-    *
-    * @method  Playlist#insert
-    * @param   {Fight} fight
-    * @returns {int} - The new length of the list
-    * @public
-    */
-   function _insert(fight) {
+        _reset.call(this)
+        while (fight = _next.call(this)) {
+            _remove.call(this, fight)
+        }
+
+        return _reset.call(this)
+    }
+
+    /**
+     * Adds a fight object right after the cursor node of the playlist and returns
+     * the new length of the list
+     *
+     * @method  Playlist#insert
+     * @param   {Fight} fight
+     * @returns {int} - The new length of the list
+     * @public
+     */
+    function _insert(fight) {
         var node = new Entry(this, fight)
         if (!this[' length']) {
             this[' head']   = node

@@ -59,6 +59,7 @@
                 return obj !== person;
             })
         },
+        getPersons: function () { return this[' persons'] },
         on: _registerEventListener,
         getName: function () { return this[' name'] }
     }

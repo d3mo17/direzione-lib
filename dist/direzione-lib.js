@@ -1231,6 +1231,7 @@
                 return obj !== person;
             })
         },
+        getPersons: function () { return this[' persons'] },
         on: _registerEventListener,
         getName: function () { return this[' name'] }
     }
@@ -1486,6 +1487,7 @@
     }
 
     Playlist.prototype = {
+        empty:    _empty,
         find:     _find,
         insert:   _insert,
         includes: _includes,
@@ -1534,17 +1536,34 @@
             this[' list'] = undefined
         }
 
+    /**
+     * Empty paylist
+     *
+     * @method Playlist#empty
+     * @return {Playlist} - Returns the Playlist instance which this method is called
+     * @public
+     */
+    function _empty() {
+        var fight
 
-   /**
-    * Adds a fight object right after the cursor node of the playlist and returns
-    * the new length of the list
-    *
-    * @method  Playlist#insert
-    * @param   {Fight} fight
-    * @returns {int} - The new length of the list
-    * @public
-    */
-   function _insert(fight) {
+        _reset.call(this)
+        while (fight = _next.call(this)) {
+            _remove.call(this, fight)
+        }
+
+        return _reset.call(this)
+    }
+
+    /**
+     * Adds a fight object right after the cursor node of the playlist and returns
+     * the new length of the list
+     *
+     * @method  Playlist#insert
+     * @param   {Fight} fight
+     * @returns {int} - The new length of the list
+     * @public
+     */
+    function _insert(fight) {
         var node = new Entry(this, fight)
         if (!this[' length']) {
             this[' head']   = node
@@ -3568,6 +3587,7 @@
             root.Direzione.Utils,
             root.Direzione.RoundRobinTournamentIterator
         )
+        root.Direzione.Tournament = { create: root.Direzione.create }
     }
 }(this, function (
     Fight,
@@ -3587,6 +3607,61 @@
     Utils,
     RoundRobinTournamentIterator
 ) {
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param {FightSettings} fightSettings
+     */
+    function Tournament(fightSettings) {
+        this[' groups']    = []
+        this[' iterators'] = []
+        this[' playlist']  = Playlist.create()
+        this[' fightSettings'] = fightSettings
+    }
+    Tournament.prototype = {
+        addGroup: function (group) {
+            this[' groups'].push(group)
+            return this
+        },
+        build: function (iterator) {
+            if (! ('create' in iterator)) {
+                new TypeError('Not an iterator!')
+            }
+
+            this[' groups'].forEach(function (group) {
+                this[' iterators'].push(iterator.create(group.getPersons()))
+            }, this);
+
+
+        },
+        getPlaylist: function () { return this[' playlist'] },
+        createFight: _createFight
+    }
+
+    function _playSound() {
+        var audio = new Audio(this[' fightSettings'].getTimeUpSoundFile())
+
+        audio.currentTime = 0
+        audio.oncanplay = function () {
+            audio.play()
+        }
+    }
+
+    function _createFight(whiteOpponentPerson, redOpponentPerson) {
+        var fight = Fight.create(
+            this[' fightSettings'],
+            Opponent.create(whiteOpponentPerson),
+            Opponent.create(redOpponentPerson)
+        )
+
+        this[' playlist'].insert(fight.on('timeUp', _playSound.bind(this)))
+        return fight
+    }
+
     // Module-API
     return {
         Fight:                        Fight,
@@ -3604,7 +3679,21 @@
         Playlist:                     Playlist,
         Repertoire:                   Repertoire,
         Utils:                        Utils,
-        RoundRobinTournamentIterator: RoundRobinTournamentIterator
+        RoundRobinTournamentIterator: RoundRobinTournamentIterator,
+        /**
+         * Creates an object to organize a tournament.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.Tournament"
+         *
+         * @param {FightSettings} fightSettings
+         *
+         * @returns  {Tournament}
+         */
+        create: function (fightSettings) {
+            return new Tournament(fightSettings)
+        }
     }
 }))
 ;

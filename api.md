@@ -9,15 +9,25 @@
 <dd></dd>
 <dt><a href="#Opponent">Opponent</a> ℗</dt>
 <dd></dd>
+<dt><a href="#OpponentGroup">OpponentGroup</a> ℗</dt>
+<dd></dd>
 <dt><a href="#Person">Person</a> ℗</dt>
 <dd></dd>
 <dt><a href="#Playlist">Playlist</a> ℗</dt>
 <dd></dd>
 <dt><a href="#Entry">Entry</a> ℗</dt>
 <dd></dd>
+<dt><a href="#Tournament">Tournament</a> ℗</dt>
+<dd></dd>
 <dt><a href="#FightEmitter">FightEmitter</a> ℗</dt>
 <dd></dd>
+<dt><a href="#FightEmitterLocal">FightEmitterLocal</a> ℗</dt>
+<dd></dd>
 <dt><a href="#FightReceiver">FightReceiver</a> ℗</dt>
+<dd></dd>
+<dt><a href="#FightReceiverLocal">FightReceiverLocal</a> ℗</dt>
+<dd></dd>
+<dt><a href="#LocalBroker">LocalBroker</a> ℗</dt>
 <dd></dd>
 <dt><a href="#Repertoire">Repertoire</a> ℗</dt>
 <dd></dd>
@@ -36,6 +46,8 @@
 <dd></dd>
 <dt><a href="#Direzione.Opponent">Direzione.Opponent</a> : <code>object</code></dt>
 <dd></dd>
+<dt><a href="#Direzione.OpponentGroup">Direzione.OpponentGroup</a> : <code>object</code></dt>
+<dd></dd>
 <dt><a href="#Direzione.Person">Direzione.Person</a> : <code>object</code></dt>
 <dd></dd>
 <dt><a href="#Direzione.Playlist">Direzione.Playlist</a> : <code>object</code></dt>
@@ -44,7 +56,15 @@
 <dd></dd>
 <dt><a href="#Direzione.FightEmitter">Direzione.FightEmitter</a> : <code>object</code></dt>
 <dd></dd>
+<dt><a href="#Direzione.FightEmitterLocal">Direzione.FightEmitterLocal</a> : <code>object</code></dt>
+<dd></dd>
 <dt><a href="#Direzione.FightReceiver">Direzione.FightReceiver</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#Direzione.FightReceiverLocal">Direzione.FightReceiverLocal</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#Direzione.LocalBroker">Direzione.LocalBroker</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#Direzione.RoundRobinTournamentIterator">Direzione.RoundRobinTournamentIterator</a> : <code>object</code></dt>
 <dd></dd>
 <dt><a href="#Direzione.Utils">Direzione.Utils</a> : <code>object</code></dt>
 <dd></dd>
@@ -443,6 +463,7 @@ Will be fired when count up has been removed
     * [.removeShido()](#Opponent+removeShido)
     * [.removeWazari()](#Opponent+removeWazari)
     * [.reset()](#Opponent+reset)
+    * [.on(type, callback)](#Opponent+on)
     * ["add"](#Opponent+event_add)
     * ["remove"](#Opponent+event_remove)
     * ["reset"](#Opponent+event_reset)
@@ -606,6 +627,22 @@ Resets the score and penalty of the opponent
 
 * * *
 
+<a name="Opponent+on"></a>
+
+### opponent.on(type, callback)
+Registers an event-listener to this object
+
+**Kind**: instance method of [<code>Opponent</code>](#Opponent)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| type | <code>String</code> |
+| callback | <code>function</code> |
+
+
+* * *
+
 <a name="Opponent+event_add"></a>
 
 ### "add"
@@ -630,6 +667,25 @@ Will be fired when score has been changed, when removed
 Will be fired when score has been reset
 
 **Kind**: event emitted by [<code>Opponent</code>](#Opponent)
+
+* * *
+
+<a name="OpponentGroup"></a>
+
+## OpponentGroup ℗
+**Kind**: global class
+**Access**: private
+
+* * *
+
+<a name="new_OpponentGroup_new"></a>
+
+### new OpponentGroup(name)
+
+| Param | Type |
+| --- | --- |
+| name | <code>String</code> |
+
 
 * * *
 
@@ -737,6 +793,7 @@ Resets the lock-out
 
 * [Playlist](#Playlist) ℗
     * [new Playlist()](#new_Playlist_new)
+    * [.empty()](#Playlist+empty) ⇒ [<code>Playlist</code>](#Playlist)
     * [.insert(fight)](#Playlist+insert) ⇒ <code>int</code>
     * [.find(callback, [fromIndex])](#Playlist+find) ⇒ [<code>Fight</code>](#Fight) \| <code>undefined</code>
     * [.includes(searchElement, [fromIndex])](#Playlist+includes) ⇒ <code>Boolean</code>
@@ -753,6 +810,17 @@ Resets the lock-out
 ### new Playlist()
 Class to manage a list of fights as playlist
 
+
+* * *
+
+<a name="Playlist+empty"></a>
+
+### playlist.empty() ⇒ [<code>Playlist</code>](#Playlist)
+Empty paylist
+
+**Kind**: instance method of [<code>Playlist</code>](#Playlist)
+**Returns**: [<code>Playlist</code>](#Playlist) - - Returns the Playlist instance which this method is called
+**Access**: public
 
 * * *
 
@@ -881,6 +949,14 @@ Class to manage the entries in the playlist
 
 * * *
 
+<a name="Tournament"></a>
+
+## Tournament ℗
+**Kind**: global class
+**Access**: private
+
+* * *
+
 <a name="FightEmitter"></a>
 
 ## FightEmitter ℗
@@ -894,7 +970,6 @@ Class to manage the entries in the playlist
     * [.replaceFight()](#FightEmitter+replaceFight)
     * [.disconnect()](#FightEmitter+disconnect)
     * [.connect()](#FightEmitter+connect) ⇒ <code>Promise</code>
-    * [.on(type, callback)](#FightEmitter+on)
     * [.on(type, callback)](#FightEmitter+on)
     * ["disconnect"](#FightEmitter+event_disconnect)
     * ["establish"](#FightEmitter+event_establish)
@@ -982,22 +1057,6 @@ Registers an event-listener to this object
 
 * * *
 
-<a name="FightEmitter+on"></a>
-
-### fightEmitter.on(type, callback)
-Registers an event-listener to this object
-
-**Kind**: instance method of [<code>FightEmitter</code>](#FightEmitter)
-**Access**: public
-
-| Param | Type |
-| --- | --- |
-| type | <code>String</code> |
-| callback | <code>function</code> |
-
-
-* * *
-
 <a name="FightEmitter+event_disconnect"></a>
 
 ### "disconnect"
@@ -1016,6 +1075,123 @@ Will be fired when peer connection has been established
 
 * * *
 
+<a name="FightEmitterLocal"></a>
+
+## FightEmitterLocal ℗
+**Kind**: global class
+**Access**: private
+
+* [FightEmitterLocal](#FightEmitterLocal) ℗
+    * [new FightEmitterLocal(receiverID, fight)](#new_FightEmitterLocal_new)
+    * [.isConnected()](#FightEmitterLocal+isConnected) ⇒ <code>Boolean</code>
+    * [.getFight()](#FightEmitterLocal+getFight)
+    * [.replaceFight()](#FightEmitterLocal+replaceFight)
+    * [.disconnect()](#FightEmitterLocal+disconnect)
+    * [.connect()](#FightEmitterLocal+connect) ⇒ <code>Promise</code>
+    * [.on(type, callback)](#FightEmitterLocal+on)
+    * ["disconnect"](#FightEmitterLocal+event_disconnect)
+    * ["establish"](#FightEmitterLocal+event_establish)
+
+
+* * *
+
+<a name="new_FightEmitterLocal_new"></a>
+
+### new FightEmitterLocal(receiverID, fight)
+
+| Param | Type |
+| --- | --- |
+| receiverID | <code>String</code> |
+| fight | [<code>Fight</code>](#Fight) |
+
+
+* * *
+
+<a name="FightEmitterLocal+isConnected"></a>
+
+### fightEmitterLocal.isConnected() ⇒ <code>Boolean</code>
+Returns whether the connection to a FightReceiver is established
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Access**: public
+
+* * *
+
+<a name="FightEmitterLocal+getFight"></a>
+
+### fightEmitterLocal.getFight()
+Returns the fight
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Access**: public
+
+* * *
+
+<a name="FightEmitterLocal+replaceFight"></a>
+
+### fightEmitterLocal.replaceFight()
+Replaces the fight of this emitter and emits the new object
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Access**: public
+
+* * *
+
+<a name="FightEmitterLocal+disconnect"></a>
+
+### fightEmitterLocal.disconnect()
+Trys to disconnect from the connected FightReceiver
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Access**: public
+
+* * *
+
+<a name="FightEmitterLocal+connect"></a>
+
+### fightEmitterLocal.connect() ⇒ <code>Promise</code>
+Trys to connect to a FightReceiver with given ID
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Emits**: [<code>establish</code>](#FightEmitterLocal+event_establish), [<code>disconnect</code>](#FightEmitterLocal+event_disconnect)
+**Access**: public
+
+* * *
+
+<a name="FightEmitterLocal+on"></a>
+
+### fightEmitterLocal.on(type, callback)
+Registers an event-listener to this object
+
+**Kind**: instance method of [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| type | <code>String</code> |
+| callback | <code>function</code> |
+
+
+* * *
+
+<a name="FightEmitterLocal+event_disconnect"></a>
+
+### "disconnect"
+Will be fired when peer connection was disconnected
+
+**Kind**: event emitted by [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+
+* * *
+
+<a name="FightEmitterLocal+event_establish"></a>
+
+### "establish"
+Will be fired when peer connection has been established
+
+**Kind**: event emitted by [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+
+* * *
+
 <a name="FightReceiver"></a>
 
 ## FightReceiver ℗
@@ -1025,6 +1201,7 @@ Will be fired when peer connection has been established
 * [FightReceiver](#FightReceiver) ℗
     * [new FightReceiver(receiverID, viewConfig, servers)](#new_FightReceiver_new)
     * [.isConnected()](#FightReceiver+isConnected) ⇒ <code>Boolean</code>
+    * [.on(type, callback)](#FightReceiver+on)
     * ["disconnect"](#FightReceiver+event_disconnect)
     * ["establish"](#FightReceiver+event_establish)
 
@@ -1054,6 +1231,22 @@ Returns whether the connection to a FightReceiver is established
 
 * * *
 
+<a name="FightReceiver+on"></a>
+
+### fightReceiver.on(type, callback)
+Registers an event-listener to this object
+
+**Kind**: instance method of [<code>FightReceiver</code>](#FightReceiver)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| type | <code>String</code> |
+| callback | <code>function</code> |
+
+
+* * *
+
 <a name="FightReceiver+event_disconnect"></a>
 
 ### "disconnect"
@@ -1069,6 +1262,86 @@ Will be fired when peer connection was disconnected
 Will be fired when peer connection has been established
 
 **Kind**: event emitted by [<code>FightReceiver</code>](#FightReceiver)
+
+* * *
+
+<a name="FightReceiverLocal"></a>
+
+## FightReceiverLocal ℗
+**Kind**: global class
+**Access**: private
+
+* [FightReceiverLocal](#FightReceiverLocal) ℗
+    * [new FightReceiverLocal(receiverID, viewConfig)](#new_FightReceiverLocal_new)
+    * [.isConnected()](#FightReceiverLocal+isConnected) ⇒ <code>Boolean</code>
+    * [.on(type, callback)](#FightReceiverLocal+on)
+    * ["disconnect"](#FightReceiverLocal+event_disconnect)
+    * ["establish"](#FightReceiverLocal+event_establish)
+
+
+* * *
+
+<a name="new_FightReceiverLocal_new"></a>
+
+### new FightReceiverLocal(receiverID, viewConfig)
+
+| Param | Type |
+| --- | --- |
+| receiverID | <code>String</code> |
+| viewConfig | <code>Object</code> |
+
+
+* * *
+
+<a name="FightReceiverLocal+isConnected"></a>
+
+### fightReceiverLocal.isConnected() ⇒ <code>Boolean</code>
+Returns whether the connection to a FightReceiver is established
+
+**Kind**: instance method of [<code>FightReceiverLocal</code>](#FightReceiverLocal)
+**Access**: public
+
+* * *
+
+<a name="FightReceiverLocal+on"></a>
+
+### fightReceiverLocal.on(type, callback)
+Registers an event-listener to this object
+
+**Kind**: instance method of [<code>FightReceiverLocal</code>](#FightReceiverLocal)
+**Access**: public
+
+| Param | Type |
+| --- | --- |
+| type | <code>String</code> |
+| callback | <code>function</code> |
+
+
+* * *
+
+<a name="FightReceiverLocal+event_disconnect"></a>
+
+### "disconnect"
+Will be fired when peer connection was disconnected
+
+**Kind**: event emitted by [<code>FightReceiverLocal</code>](#FightReceiverLocal)
+
+* * *
+
+<a name="FightReceiverLocal+event_establish"></a>
+
+### "establish"
+Will be fired when peer connection has been established
+
+**Kind**: event emitted by [<code>FightReceiverLocal</code>](#FightReceiverLocal)
+
+* * *
+
+<a name="LocalBroker"></a>
+
+## LocalBroker ℗
+**Kind**: global class
+**Access**: private
 
 * * *
 
@@ -1266,6 +1539,27 @@ Creates an object to manage a opponent (in a fight).
 
 * * *
 
+<a name="Direzione.OpponentGroup"></a>
+
+## Direzione.OpponentGroup : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.OpponentGroup.create"></a>
+
+### Direzione.OpponentGroup.create(name) ⇒ [<code>OpponentGroup</code>](#OpponentGroup)
+Creates an object to organize opponents in groups.
+
+**Kind**: static method of [<code>Direzione.OpponentGroup</code>](#Direzione.OpponentGroup)
+
+| Param | Type |
+| --- | --- |
+| name | <code>String</code> |
+
+
+* * *
+
 <a name="Direzione.Person"></a>
 
 ## Direzione.Person : <code>object</code>
@@ -1334,6 +1628,28 @@ Creates an object to emit fight events to a receiver.
 
 * * *
 
+<a name="Direzione.FightEmitterLocal"></a>
+
+## Direzione.FightEmitterLocal : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.FightEmitterLocal.create"></a>
+
+### Direzione.FightEmitterLocal.create(receiverID, fight) ⇒ [<code>FightEmitterLocal</code>](#FightEmitterLocal)
+Creates an object to emit fight events to a receiver.
+
+**Kind**: static method of [<code>Direzione.FightEmitterLocal</code>](#Direzione.FightEmitterLocal)
+
+| Param | Type |
+| --- | --- |
+| receiverID | <code>String</code> |
+| fight | [<code>Fight</code>](#Fight) |
+
+
+* * *
+
 <a name="Direzione.FightReceiver"></a>
 
 ## Direzione.FightReceiver : <code>object</code>
@@ -1352,6 +1668,65 @@ Creates an object to receive scoreboard events from a emitter scoreboard.
 | --- | --- |
 | receiverID | <code>String</code> |
 | viewConfig | <code>Object</code> |
+
+
+* * *
+
+<a name="Direzione.FightReceiverLocal"></a>
+
+## Direzione.FightReceiverLocal : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.FightReceiverLocal.create"></a>
+
+### Direzione.FightReceiverLocal.create(receiverID, viewConfig) ⇒ [<code>FightReceiverLocal</code>](#FightReceiverLocal)
+Creates an object to receive scoreboard events from a emitter scoreboard.
+
+**Kind**: static method of [<code>Direzione.FightReceiverLocal</code>](#Direzione.FightReceiverLocal)
+
+| Param | Type |
+| --- | --- |
+| receiverID | <code>String</code> |
+| viewConfig | <code>Object</code> |
+
+
+* * *
+
+<a name="Direzione.LocalBroker"></a>
+
+## Direzione.LocalBroker : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.LocalBroker.create"></a>
+
+### Direzione.LocalBroker.create() ⇒ [<code>LocalBroker</code>](#LocalBroker)
+Realizes a broker between two peers over the local storage
+
+**Kind**: static method of [<code>Direzione.LocalBroker</code>](#Direzione.LocalBroker)
+
+* * *
+
+<a name="Direzione.RoundRobinTournamentIterator"></a>
+
+## Direzione.RoundRobinTournamentIterator : <code>object</code>
+**Kind**: global namespace
+
+* * *
+
+<a name="Direzione.RoundRobinTournamentIterator.create"></a>
+
+### Direzione.RoundRobinTournamentIterator.create(arr)
+Creates an object to iterate through an array.
+
+**Kind**: static method of [<code>Direzione.RoundRobinTournamentIterator</code>](#Direzione.RoundRobinTournamentIterator)
+
+| Param | Type |
+| --- | --- |
+| arr | <code>Array</code> |
 
 
 * * *

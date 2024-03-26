@@ -80,6 +80,7 @@
             root.Direzione.Utils,
             root.Direzione.RoundRobinTournamentIterator
         )
+        root.Direzione.Tournament = { create: root.Direzione.create }
     }
 }(this, function (
     Fight,
@@ -99,6 +100,61 @@
     Utils,
     RoundRobinTournamentIterator
 ) {
+
+    /**
+     * @class
+     * @hideconstructor
+     * @global
+     * @private
+     *
+     * @param {FightSettings} fightSettings
+     */
+    function Tournament(fightSettings) {
+        this[' groups']    = []
+        this[' iterators'] = []
+        this[' playlist']  = Playlist.create()
+        this[' fightSettings'] = fightSettings
+    }
+    Tournament.prototype = {
+        addGroup: function (group) {
+            this[' groups'].push(group)
+            return this
+        },
+        build: function (iterator) {
+            if (! ('create' in iterator)) {
+                new TypeError('Not an iterator!')
+            }
+
+            this[' groups'].forEach(function (group) {
+                this[' iterators'].push(iterator.create(group.getPersons()))
+            }, this);
+
+
+        },
+        getPlaylist: function () { return this[' playlist'] },
+        createFight: _createFight
+    }
+
+    function _playSound() {
+        var audio = new Audio(this[' fightSettings'].getTimeUpSoundFile())
+
+        audio.currentTime = 0
+        audio.oncanplay = function () {
+            audio.play()
+        }
+    }
+
+    function _createFight(whiteOpponentPerson, redOpponentPerson) {
+        var fight = Fight.create(
+            this[' fightSettings'],
+            Opponent.create(whiteOpponentPerson),
+            Opponent.create(redOpponentPerson)
+        )
+
+        this[' playlist'].insert(fight.on('timeUp', _playSound.bind(this)))
+        return fight
+    }
+
     // Module-API
     return {
         Fight:                        Fight,
@@ -116,6 +172,20 @@
         Playlist:                     Playlist,
         Repertoire:                   Repertoire,
         Utils:                        Utils,
-        RoundRobinTournamentIterator: RoundRobinTournamentIterator
+        RoundRobinTournamentIterator: RoundRobinTournamentIterator,
+        /**
+         * Creates an object to organize a tournament.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.Tournament"
+         *
+         * @param {FightSettings} fightSettings
+         *
+         * @returns  {Tournament}
+         */
+        create: function (fightSettings) {
+            return new Tournament(fightSettings)
+        }
     }
 }))
