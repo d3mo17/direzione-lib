@@ -40,6 +40,7 @@
             'direzione-lib/model/Playlist',
             'direzione-lib/view/Repertoire',
             'direzione-lib/util/Utils',
+            'direzione-lib/util/RingIterator',
             'direzione-lib/util/RoundRobinTournamentIterator'
         ],factory)
     } else if (typeof module === 'object' && module.exports) {
@@ -59,6 +60,7 @@
             require('./Playlist'),
             require('../view/Repertoire'),
             require('../util/Utils'),
+            require('../util/RingIterator'),
             require('../util/RoundRobinTournamentIterator')
         )
     } else {
@@ -78,6 +80,7 @@
             root.Direzione.Playlist,
             root.Direzione.Repertoire,
             root.Direzione.Utils,
+            root.Direzione.RingIterator,
             root.Direzione.RoundRobinTournamentIterator
         )
         root.Direzione.Tournament = { create: root.Direzione.create }
@@ -98,6 +101,7 @@
     Playlist,
     Repertoire,
     Utils,
+    RingIterator,
     RoundRobinTournamentIterator
 ) {
 
@@ -131,8 +135,7 @@
 
 
         },
-        getPlaylist: function () { return this[' playlist'] },
-        createFight: _createFight
+        getPlaylist: function () { return this[' playlist'] }
     }
 
     function _playSound() {
@@ -144,7 +147,7 @@
         }
     }
 
-    function _createFight(whiteOpponentPerson, redOpponentPerson) {
+    function _addFight(whiteOpponentPerson, redOpponentPerson) {
         var fight = Fight.create(
             this[' fightSettings'],
             Opponent.create(whiteOpponentPerson),
@@ -172,6 +175,7 @@
         Playlist:                     Playlist,
         Repertoire:                   Repertoire,
         Utils:                        Utils,
+        RingIterator:                 RingIterator,
         RoundRobinTournamentIterator: RoundRobinTournamentIterator,
         /**
          * Creates an object to organize a tournament.

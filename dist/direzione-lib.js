@@ -3383,15 +3383,15 @@
  *
  * @returns {Object}
  */
-/** @namespace "Direzione.RoundRobinTournamentIterator" */
+/** @namespace "Direzione.RingIterator" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/util/RoundRobinTournamentIterator',factory)
+        define('direzione-lib/util/RingIterator',factory)
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory()
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.RoundRobinTournamentIterator = factory()
+        root.Direzione.RingIterator = factory()
     }
 }(this, function () {
 
@@ -3419,6 +3419,57 @@
         }
     }
 
+    // Module-API
+    return {
+        /**
+         * Creates an object to iterate through an array.
+         *
+         * @static
+         * @method   create
+         * @memberof "Direzione.RingIterator"
+         * @param    {Array} arr
+         */
+        create: function (arr) {
+            return new RingIterator(arr);
+        },
+    }
+}))
+;
+/**
+ * A library of components that can be used to manage a martial arts tournament
+ *
+ * Copyright (C) 2024 Daniel Moritz
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, according to version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param   {Object} root
+ * @param   {Function} factory
+ * @license GPL-3.0
+ *
+ * @returns {Object}
+ */
+/** @namespace "Direzione.RoundRobinTournamentIterator" */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define('direzione-lib/util/RoundRobinTournamentIterator',['direzione-lib/util/RingIterator'], factory)
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./RingIterator'))
+    } else {
+        root.Direzione = root.Direzione || {}
+        root.Direzione.RoundRobinTournamentIterator = factory(root.Direzione.RingIterator)
+    }
+}(this, function (RingIterator) {
+
     function RoundRobinTournamentIterator(arr) {
         if (arr.length < 2) {
             throw new RangeError('Provide an array with at least two elements!');
@@ -3432,7 +3483,7 @@
         this[' break']     = false
         this[' maxTurns']  = arr.length
         this[' half']      = Math.floor((arr.length - 1) / 2)
-        this[' iterator']  = new RingIterator(arr)
+        this[' iterator']  = RingIterator.create(arr)
         this[' queue']     = []
         this[' postQueue'] = []
         this[' stack']     = []
@@ -3547,6 +3598,7 @@
             'direzione-lib/model/Playlist',
             'direzione-lib/view/Repertoire',
             'direzione-lib/util/Utils',
+            'direzione-lib/util/RingIterator',
             'direzione-lib/util/RoundRobinTournamentIterator'
         ],factory)
     } else if (typeof module === 'object' && module.exports) {
@@ -3566,6 +3618,7 @@
             require('./Playlist'),
             require('../view/Repertoire'),
             require('../util/Utils'),
+            require('../util/RingIterator'),
             require('../util/RoundRobinTournamentIterator')
         )
     } else {
@@ -3585,6 +3638,7 @@
             root.Direzione.Playlist,
             root.Direzione.Repertoire,
             root.Direzione.Utils,
+            root.Direzione.RingIterator,
             root.Direzione.RoundRobinTournamentIterator
         )
         root.Direzione.Tournament = { create: root.Direzione.create }
@@ -3605,6 +3659,7 @@
     Playlist,
     Repertoire,
     Utils,
+    RingIterator,
     RoundRobinTournamentIterator
 ) {
 
@@ -3638,8 +3693,7 @@
 
 
         },
-        getPlaylist: function () { return this[' playlist'] },
-        createFight: _createFight
+        getPlaylist: function () { return this[' playlist'] }
     }
 
     function _playSound() {
@@ -3651,7 +3705,7 @@
         }
     }
 
-    function _createFight(whiteOpponentPerson, redOpponentPerson) {
+    function _addFight(whiteOpponentPerson, redOpponentPerson) {
         var fight = Fight.create(
             this[' fightSettings'],
             Opponent.create(whiteOpponentPerson),
@@ -3679,6 +3733,7 @@
         Playlist:                     Playlist,
         Repertoire:                   Repertoire,
         Utils:                        Utils,
+        RingIterator:                 RingIterator,
         RoundRobinTournamentIterator: RoundRobinTournamentIterator,
         /**
          * Creates an object to organize a tournament.

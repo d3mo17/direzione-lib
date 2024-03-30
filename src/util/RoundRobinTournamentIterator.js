@@ -24,38 +24,14 @@
 /** @namespace "Direzione.RoundRobinTournamentIterator" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(factory)
+        define(['direzione-lib/util/RingIterator'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory()
+        module.exports = factory(require('./RingIterator'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.RoundRobinTournamentIterator = factory()
+        root.Direzione.RoundRobinTournamentIterator = factory(root.Direzione.RingIterator)
     }
-}(this, function () {
-
-    /**
-     * @param {Array} arr
-     */
-    function RingIterator(arr) {
-        this[' arr']    = arr
-        this[' values'] = arr.values()
-        this[' turn']   = 1
-    }
-    RingIterator.prototype = {
-        next: function () {
-            var entry = this[' values'].next()
-            if (entry.done) {
-                this[' values'] = this[' arr'].values()
-                this[' turn']++
-                return this[' values'].next().value
-            }
-
-            return entry.value
-        },
-        getTurn: function () {
-            return this[' turn']
-        }
-    }
+}(this, function (RingIterator) {
 
     function RoundRobinTournamentIterator(arr) {
         if (arr.length < 2) {
@@ -70,7 +46,7 @@
         this[' break']     = false
         this[' maxTurns']  = arr.length
         this[' half']      = Math.floor((arr.length - 1) / 2)
-        this[' iterator']  = new RingIterator(arr)
+        this[' iterator']  = RingIterator.create(arr)
         this[' queue']     = []
         this[' postQueue'] = []
         this[' stack']     = []
@@ -95,7 +71,7 @@
             for (var p = this[' startPos'];;p++) {
                 next = it.next()
                 t    = it.getTurn()
-                
+
                 if (this[' maxTurns'] <= t) {
                     return null
                 }
