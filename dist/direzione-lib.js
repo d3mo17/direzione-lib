@@ -3298,9 +3298,10 @@
      * @private
      */
     function _emptyEntryWrapperElement() {
-        this[' entryWrapper'].childNodes.forEach(function (entry) {
-            entry.remove()
-        })
+        var nodes = this[' entryWrapper'].childNodes
+        while(0 < nodes.length) {
+            nodes[0].remove()
+        }
     }
 
     /**
