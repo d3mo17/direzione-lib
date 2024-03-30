@@ -1,5 +1,5 @@
 /**
- * Direzione Library v0.19.0
+ * Direzione Library v1.0.0
  */
 /**
  * A library of components that can be used to manage a martial arts tournament
@@ -3251,14 +3251,14 @@
 /** @namespace "Direzione.Repertoire" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define('direzione-lib/view/Repertoire',['direzione-lib/model/Playlist', 'direzione-lib/util/Utils'], factory)
+        define('direzione-lib/view/Repertoire',['direzione-lib/util/Utils'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory(require('../model/Playlist'), require('../util/Utils'))
+        module.exports = factory(require('../util/Utils'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.Repertoire = factory(root.Direzione.Playlist, root.Direzione.Utils)
+        root.Direzione.Repertoire = factory(root.Direzione.Utils)
     }
-}(this, function (Playlist, Utils) {
+}(this, function (Utils) {
 
     /**
      * @class
@@ -3266,14 +3266,14 @@
      * @global
      * @private
      *
-     * @param   {Playlist} playlistModel
-     * @param   {Object}   viewConfig
+     * @param   {Tournament} tournament
+     * @param   {Object}     viewConfig
      *
      * @borrows <anonymous>~_connect as connect
      * @borrows <anonymous>~_registerEventListener as on
      */
-    function Repertoire(playlistModel, viewConfig) {
-        this[' playlist']        = playlistModel
+    function Repertoire(tournament, viewConfig) {
+        this[' tournament']      = tournament
         this[' entryJig']        = viewConfig.entryJigElem.cloneNode(true)
         this[' entryWrapper']    = viewConfig.entryWrapperElem
         this[' cssWhiteName']    = viewConfig.selectorWhiteOpponentName || '.white'
@@ -3332,9 +3332,9 @@
      * @private
      */
     function _makeListVisual() {
-        var fight, entry
-        this[' playlist'].reset()
-        while (fight = this[' playlist'].next()) {
+        var fight, entry, pl = this[' tournament'].getPlaylist()
+        pl.reset()
+        while (fight = pl.next()) {
             entry = this[' entryJig'].cloneNode(true)
             entry.fight = fight
             entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
@@ -3352,12 +3352,12 @@
          * @static
          * @method   create
          * @memberof "Direzione.Repertoire"
-         * @param   {Playlist} playlistModel
+         * @param   {Tournament} tournament
          * @param   {Object} viewConfig
          * @returns {Repertoire}
          */
-        create: function (playlistModel, viewConfig) {
-            return new Repertoire(playlistModel, viewConfig)
+        create: function (tournament, viewConfig) {
+            return new Repertoire(tournament, viewConfig)
         }
     };
 }));
