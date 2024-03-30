@@ -58,14 +58,15 @@
     }
 
     Playlist.prototype = {
-        empty:    _empty,
-        find:     _find,
-        insert:   _insert,
-        includes: _includes,
-        next:     _next,
-        prev:     _prev,
-        reset:    _reset,
-        remove:   _remove
+        empty:     _empty,
+        find:      _find,
+        insert:    _insert,
+        includes:  _includes,
+        next:      _next,
+        prev:      _prev,
+        reset:     _reset,
+        remove:    _remove,
+        getLength: function () { return this[' length'] }
     }
 
         /**

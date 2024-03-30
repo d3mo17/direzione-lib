@@ -115,7 +115,6 @@
      */
     function Tournament(fightSettings) {
         this[' groups']    = []
-        this[' iterators'] = []
         this[' playlist']  = Playlist.create()
         this[' fightSettings'] = fightSettings
     }
@@ -124,16 +123,39 @@
             this[' groups'].push(group)
             return this
         },
+        setGroups: function (groups) {
+            this[' groups'] = groups
+            return this
+        },
         build: function (iterator) {
+            var i = 0, processed = []
+            var iterators, persList, opponents
+            this[' iterators'] = []
+
             if (! ('create' in iterator)) {
                 new TypeError('Not an iterator!')
             }
 
             this[' groups'].forEach(function (group) {
                 this[' iterators'].push(iterator.create(group.getPersons()))
+                processed.push(false)
             }, this);
 
+            iterators = RingIterator.create(this[' iterators'])
 
+            while (persList = iterators.next()) {
+                for (;;) {
+                    opponents = persList.next()
+                    if (opponents === null) {
+                        processed[i % this[' iterators'].length] = true
+                        break
+                    }
+                    if (opponents.length === 0) break
+                    _addFight.call(this, opponents[0], opponents[1])
+                }
+                if (processed.every(function (entry) { return entry })) return
+                i++
+            }
         },
         getPlaylist: function () { return this[' playlist'] }
     }
