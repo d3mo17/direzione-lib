@@ -9,7 +9,8 @@
   },
   "scripts": {
     "document": "node_modules/jsdoc-to-markdown/bin/cli.js --no-cache --separators --private src/**/*.js > api.md",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "test": "node_modules/jest/bin/jest.js"
   },
   "main": "./src/model/Tournament.js",
   "browser": "dist/direzione-lib.min.js",
@@ -18,6 +19,7 @@
     "peerjs": "^1.5.1"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "jsdoc-to-markdown": "^8.0.0",
     "requirejs": "^2.3.6",
     "uglify-js": "^3.8.1"
