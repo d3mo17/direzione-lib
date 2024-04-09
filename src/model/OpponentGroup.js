@@ -24,14 +24,14 @@
 /** @namespace "Direzione.OpponentGroup" */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(factory)
+        define(['direzione-lib/model/Person'], factory)
     } else if (typeof module === 'object' && module.exports) {
-        module.exports = factory()
+        module.exports = factory(require('./Person'))
     } else {
         root.Direzione = root.Direzione || {}
-        root.Direzione.OpponentGroup = factory()
+        root.Direzione.OpponentGroup = factory(root.Direzione.Person)
     }
-}(this, function () {
+}(this, function (Person) {
 
     /**
      * @class
@@ -50,16 +50,20 @@
 
     OpponentGroup.prototype = {
         addPerson: function (person) {
+            if (! Person.isInstance(person)) return
             _dispatch.call(this, 'add', person)
             this[' persons'].push(person)
         },
         removePerson: function (person) {
-            _dispatch.call(this, 'remove', person)
+            var memLength = this[' persons'].length
             this[' persons'] = this[' persons'].filter(function(obj) {
                 return obj !== person;
             })
+            if (memLength !== this[' persons'].length) {
+                _dispatch.call(this, 'remove', person)
+            }
         },
-        getPersons: function () { return this[' persons'] },
+        getPersons: function () { return this[' persons'].slice() },
         on: _registerEventListener,
         getName: function () { return this[' name'] }
     }

@@ -134,6 +134,9 @@
          */
         create: function (firstName, lastName, club) {
             return new Person(firstName, lastName, club);
+        },
+        isInstance: function (obj) {
+            return obj instanceof Person
         }
     }
 }))
