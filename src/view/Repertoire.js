@@ -110,6 +110,19 @@
         pl.reset()
         while (fight = pl.next()) {
             entry = this[' entryJig'].cloneNode(true)
+
+            fight.on('stop', function () {
+                this.classList.contains('running') && this.classList.remove('running')
+                ! this.classList.contains('completed') && this.classList.add('completed')
+            }.bind(entry))
+                .on('reset', function () {
+                    this.classList.contains('running') && this.classList.remove('running')
+                    this.classList.contains('completed') && this.classList.remove('completed')
+                }.bind(entry))
+                .on('startPauseResume', function () {
+                    ! this.classList.contains('running') && this.classList.add('running')
+                }.bind(entry))
+
             entry.fight = fight
             entry.querySelector(this[' cssWhiteName']).innerText = fight.getWhiteOpponent().getFullName()
             entry.querySelector(this[' cssRedName']).innerText   = fight.getRedOpponent().getFullName()
