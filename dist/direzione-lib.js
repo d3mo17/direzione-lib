@@ -92,8 +92,8 @@
             .on('add', _logger.bind(this, 'white', 'add'))
             .on('remove', _logger.bind(this, 'white', 'remove'))
         this[' fight'].getRedOpponent()
-            .on('add', _logger.bind(this, 'red', 'add'))
-            .on('remove', _logger.bind(this, 'red', 'remove'))
+            .on('add', _logger.bind(this, 'red/blue', 'add'))
+            .on('remove', _logger.bind(this, 'red/blue', 'remove'))
     }
 
     function _logger(side, op, what) {
