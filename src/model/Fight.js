@@ -453,6 +453,10 @@
      * @private
      */
     function _stop(msDownForce, msUpForce, side) {
+        if (this[' stopped']) {
+            return;
+        }
+
         this[' stopped'] = true
         if (typeof msDownForce === 'undefined') {
             this[' countdown'].stop('timeup')
