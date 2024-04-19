@@ -69,6 +69,13 @@
         reset: function () {
             (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
             delete this[' lockout']
+        },
+        toStruct: function () {
+            return {
+                firstName: this[' firstName'],
+                lastName: this[' lastName'],
+                club: this[' club']
+            }
         }
     }
 

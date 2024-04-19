@@ -127,6 +127,10 @@
             this[' groups'] = groups
             return this
         },
+        setName: function (name) {
+            this[' name'] = name
+            return this
+        },
         build: function (iterator) {
             var i = 0, processed = []
             var iterators, persList, opponents
@@ -157,7 +161,15 @@
                 i++
             }
         },
-        getPlaylist: function () { return this[' playlist'] }
+        getPlaylist: function () { return this[' playlist'] },
+        toStruct: function () {
+            return {
+                name: this[' name'],
+                groups: this[' groups'].map(function (group) {
+                    return group.toStruct()
+                })
+            }
+        }
     }
 
     function _playSound() {

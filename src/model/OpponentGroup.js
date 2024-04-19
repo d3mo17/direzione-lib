@@ -65,7 +65,15 @@
         },
         getPersons: function () { return this[' persons'].slice() },
         on: _registerEventListener,
-        getName: function () { return this[' name'] }
+        getName: function () { return this[' name'] },
+        toStruct: function () {
+            return {
+                name: this[' name'],
+                persons: this[' persons'].map(function (person) {
+                    return person.toStruct()
+                })
+            }
+        }
     }
 
     /**

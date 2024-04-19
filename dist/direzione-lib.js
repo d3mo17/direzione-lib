@@ -1245,6 +1245,13 @@
         reset: function () {
             (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
             delete this[' lockout']
+        },
+        toStruct: function () {
+            return {
+                firstName: this[' firstName'],
+                lastName: this[' lastName'],
+                club: this[' club']
+            }
         }
     }
 
@@ -1384,7 +1391,15 @@
         },
         getPersons: function () { return this[' persons'].slice() },
         on: _registerEventListener,
-        getName: function () { return this[' name'] }
+        getName: function () { return this[' name'] },
+        toStruct: function () {
+            return {
+                name: this[' name'],
+                persons: this[' persons'].map(function (person) {
+                    return person.toStruct()
+                })
+            }
+        }
     }
 
     /**
@@ -1780,18 +1795,20 @@
      *
      * @param    {String} path
      * @param    {Function} callback
+     * @param    {Boolean} async
      *
      * @returns  {String}
      */
-    function loadTranslationJS(path, callback) {
-        var script = document.createElement('script');
+    function loadTranslationJS(path, callback, async) {
+        var script = document.createElement('script')
 
         script.onload = function () {
             callback(Direzione.translation)
-        };
-        script.src = path;
+        }
+        script.async = !!async
+        script.src = path
 
-        document.head.appendChild(script);
+        document.head.appendChild(script)
     }
 
     /**
@@ -2198,7 +2215,7 @@
      * @returns {Promise}
      */
     function _connect() {
-        var deferred = {resolve: null, reject: null};
+        var deferred = {resolve: null, reject: null}
         deferred.promise = new Promise(function (resolve, reject) {
             deferred.resolve = resolve
             deferred.reject  = reject
@@ -3711,6 +3728,10 @@
             this[' groups'] = groups
             return this
         },
+        setName: function (name) {
+            this[' name'] = name
+            return this
+        },
         build: function (iterator) {
             var i = 0, processed = []
             var iterators, persList, opponents
@@ -3741,7 +3762,15 @@
                 i++
             }
         },
-        getPlaylist: function () { return this[' playlist'] }
+        getPlaylist: function () { return this[' playlist'] },
+        toStruct: function () {
+            return {
+                name: this[' name'],
+                groups: this[' groups'].map(function (group) {
+                    return group.toStruct()
+                })
+            }
+        }
     }
 
     function _playSound() {

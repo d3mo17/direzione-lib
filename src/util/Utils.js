@@ -44,18 +44,20 @@
      *
      * @param    {String} path
      * @param    {Function} callback
+     * @param    {Boolean} async
      *
      * @returns  {String}
      */
-    function loadTranslationJS(path, callback) {
-        var script = document.createElement('script');
+    function loadTranslationJS(path, callback, async) {
+        var script = document.createElement('script')
 
         script.onload = function () {
             callback(Direzione.translation)
-        };
-        script.src = path;
+        }
+        script.async = !!async
+        script.src = path
 
-        document.head.appendChild(script);
+        document.head.appendChild(script)
     }
 
     /**

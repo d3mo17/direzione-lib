@@ -159,7 +159,7 @@
      * @returns {Promise}
      */
     function _connect() {
-        var deferred = {resolve: null, reject: null};
+        var deferred = {resolve: null, reject: null}
         deferred.promise = new Promise(function (resolve, reject) {
             deferred.resolve = resolve
             deferred.reject  = reject
