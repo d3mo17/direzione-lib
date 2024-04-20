@@ -51,7 +51,8 @@
 
     FightHistory.prototype = {
         getFight: function () { return this[' fight'] },
-        getLog: function () { return JSON.parse(JSON.stringify(this[' log'])) }
+        getLog:   function () { return JSON.parse(JSON.stringify(this[' log'])) },
+        toStruct: function () { return this.getLog() }
     }
 
     /**

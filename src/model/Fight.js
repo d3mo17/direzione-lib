@@ -110,7 +110,16 @@
         startPauseResume: _startPauseResume,
         osaeKomi:         _osaeKomi,
         stop:             _stop,
-        toketa:           _toketa
+        toketa:           _toketa,
+        toStruct:         function () {
+            return {
+                history:       this.getHistory().toStruct(),
+                timeLeft:      this.getTimeLeft(),
+                stopped:       this.isStopped(),
+                whiteOpponent: this.getWhiteOpponent().toStruct(),
+                redOpponent:   this.getRedOpponent().toStruct()
+            }
+        }
     }
 
     /**

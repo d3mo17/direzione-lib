@@ -42,11 +42,13 @@
      * @param   {String} firstName
      * @param   {String} lastName
      * @param   {String} club
+     * @param   {String} forcedUUID
      */
-    function Person (firstName, lastName, club) {
+    function Person (firstName, lastName, club, forcedUUID) {
         this[' firstName'] = firstName
         this[' lastName']  = lastName
         this[' club']      = club
+        this[' uuid']      = forcedUUID || uuid()
     }
 
     Person.prototype = {
@@ -70,8 +72,12 @@
             (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
             delete this[' lockout']
         },
+        getUUID: function () {
+            return this[' uuid']
+        },
         toStruct: function () {
             return {
+                uuid: this[' uuid'],
                 firstName: this[' firstName'],
                 lastName: this[' lastName'],
                 club: this[' club']

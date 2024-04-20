@@ -165,9 +165,24 @@
         toStruct: function () {
             return {
                 name: this[' name'],
+                playlist: this[' playlist'].toStruct(),
                 groups: this[' groups'].map(function (group) {
                     return group.toStruct()
-                })
+                }),
+                persons: function () {
+                    var persons = {}
+                    this[' groups']
+                        .reduce(function (persons, group) {
+                            return persons.concat(group.getPersons().map(function (person) {
+                                return [person.getUUID(), person.toStruct()]
+                            }))
+                        }, [])
+                        .forEach(function (tuple) {
+                            persons[tuple[0]] = tuple[1]
+                        })
+
+                    return persons
+                }.call(this)
             }
         }
     }

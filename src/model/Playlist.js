@@ -66,7 +66,20 @@
         prev:      _prev,
         reset:     _reset,
         remove:    _remove,
-        getLength: function () { return this[' length'] }
+        getLength: function () { return this[' length'] },
+        toStruct:  function () {
+            var fight
+            var mem = this[' cursor']
+            var entries = []
+
+            this.reset()
+            while (fight = this.next()) {
+                entries.push(fight.toStruct())
+            }
+            this[' cursor'] = mem
+
+            return entries
+        }
     }
 
         /**

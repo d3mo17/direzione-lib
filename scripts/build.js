@@ -21,11 +21,13 @@ rjs.optimize({
 
     baseUrl: 'src',
     paths: {
+      'uuid-random': '../node_modules/uuid-random',
       'direzione-lib': '.',
       'durata': 'empty:',
       'peerjs': 'empty:'
     },
     include: [
+      'uuid-random/index',
       'direzione-lib/config/FightSettings',
       'direzione-lib/model/Fight',
       'direzione-lib/model/FightHistory',
@@ -52,6 +54,21 @@ rjs.optimize({
         fs.writeFileSync('dist/direzione-lib.js', [
             '/**',
             ' * Direzione Library v' + package.version,
+            ' *',
+            ' * Copyright (C) 2023 Daniel Moritz',
+            ' * Copyright (c) 2016-2019 Wes Roberts (for included library "uuid-random", MIT Licensed)',
+            ' *',
+            ' * This program is free software: you can redistribute it and/or modify',
+            ' * it under the terms of the GNU General Public License as published by',
+            ' * the Free Software Foundation, in version 3 of the License.',
+            ' *',
+            ' * This program is distributed in the hope that it will be useful,',
+            ' * but WITHOUT ANY WARRANTY; without even the implied warranty of',
+            ' * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the',
+            ' * GNU General Public License for more details.',
+            ' *',
+            ' * You should have received a copy of the GNU General Public License',
+            ' * along with this program.  If not, see <https://www.gnu.org/licenses/>',
             ' */', ''
         ].join("\n") + text);
         fs.writeFileSync(
@@ -63,6 +80,7 @@ rjs.optimize({
                 ' * A library of components that can be used to manage a martial arts tournament',
                 ' *',
                 ' * Copyright (C) 2023 Daniel Moritz',
+                ' * Copyright (c) 2016-2019 Wes Roberts (for included library "uuid-random", MIT Licensed)',
                 ' *',
                 ' * This program is free software: you can redistribute it and/or modify',
                 ' * it under the terms of the GNU General Public License as published by',

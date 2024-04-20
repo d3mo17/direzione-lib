@@ -1,6 +1,138 @@
 /**
  * Direzione Library v1.1.0
+ *
+ * Copyright (C) 2023 Daniel Moritz
+ * Copyright (c) 2016-2019 Wes Roberts (for included library "uuid-random", MIT Licensed)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, in version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>
  */
+
+
+(function(){
+
+  var
+    buf,
+    bufIdx = 0,
+    hexBytes = [],
+    i
+  ;
+
+  // Pre-calculate toString(16) for speed
+  for (i = 0; i < 256; i++) {
+    hexBytes[i] = (i + 0x100).toString(16).substr(1);
+  }
+
+  // Buffer random numbers for speed
+  // Reduce memory usage by decreasing this number (min 16)
+  // or improve speed by increasing this number (try 16384)
+  uuid.BUFFER_SIZE = 4096;
+
+  // Binary uuids
+  uuid.bin = uuidBin;
+
+  // Clear buffer
+  uuid.clearBuffer = function() {
+    buf = null;
+    bufIdx = 0;
+  };
+
+  // Test for uuid
+  uuid.test = function(uuid) {
+    if (typeof uuid === 'string') {
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+    }
+    return false;
+  };
+
+  // Node & Browser support
+  var crypt0;
+  if (typeof crypto !== 'undefined') {
+    crypt0 = crypto;
+  } else if( (typeof window !== 'undefined') && (typeof window.msCrypto !== 'undefined')) {
+    crypt0 = window.msCrypto; // IE11
+  }
+
+  if ((typeof module !== 'undefined') && (typeof require === 'function')) {
+    crypt0 = crypt0 || require('crypto');
+    module.exports = uuid;
+  } else if (typeof window !== 'undefined') {
+    window.uuid = uuid;
+  }
+
+  // Use best available PRNG
+  // Also expose this so you can override it.
+  uuid.randomBytes = (function(){
+    if (crypt0) {
+      if (crypt0.randomBytes) {
+        return crypt0.randomBytes;
+      }
+      if (crypt0.getRandomValues) {
+        if (typeof Uint8Array.prototype.slice !== 'function') {
+          return function(n) {
+            var bytes = new Uint8Array(n);
+            crypt0.getRandomValues(bytes);
+            return Array.from(bytes);
+          };
+        }
+        return function(n) {
+          var bytes = new Uint8Array(n);
+          crypt0.getRandomValues(bytes);
+          return bytes;
+        };
+      }
+    }
+    return function(n) {
+      var i, r = [];
+      for (i = 0; i < n; i++) {
+        r.push(Math.floor(Math.random() * 256));
+      }
+      return r;
+    };
+  })();
+
+  // Buffer some random bytes for speed
+  function randomBytesBuffered(n) {
+    if (!buf || ((bufIdx + n) > uuid.BUFFER_SIZE)) {
+      bufIdx = 0;
+      buf = uuid.randomBytes(uuid.BUFFER_SIZE);
+    }
+    return buf.slice(bufIdx, bufIdx += n);
+  }
+
+  // uuid.bin
+  function uuidBin() {
+    var b = randomBytesBuffered(16);
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    return b;
+  }
+
+  // String UUIDv4 (Random)
+  function uuid() {
+    var b = uuidBin();
+    return hexBytes[b[0]] + hexBytes[b[1]] +
+      hexBytes[b[2]] + hexBytes[b[3]] + '-' +
+      hexBytes[b[4]] + hexBytes[b[5]] + '-' +
+      hexBytes[b[6]] + hexBytes[b[7]] + '-' +
+      hexBytes[b[8]] + hexBytes[b[9]] + '-' +
+      hexBytes[b[10]] + hexBytes[b[11]] +
+      hexBytes[b[12]] + hexBytes[b[13]] +
+      hexBytes[b[14]] + hexBytes[b[15]]
+    ;
+  }
+
+})();
+
 /**
  * A library of components that can be used to manage a martial arts tournament
  *
@@ -54,7 +186,8 @@
 
     FightHistory.prototype = {
         getFight: function () { return this[' fight'] },
-        getLog: function () { return JSON.parse(JSON.stringify(this[' log'])) }
+        getLog:   function () { return JSON.parse(JSON.stringify(this[' log'])) },
+        toStruct: function () { return this.getLog() }
     }
 
     /**
@@ -229,7 +362,16 @@
         startPauseResume: _startPauseResume,
         osaeKomi:         _osaeKomi,
         stop:             _stop,
-        toketa:           _toketa
+        toketa:           _toketa,
+        toStruct:         function () {
+            return {
+                history:       this.getHistory().toStruct(),
+                timeLeft:      this.getTimeLeft(),
+                stopped:       this.isStopped(),
+                whiteOpponent: this.getWhiteOpponent().toStruct(),
+                redOpponent:   this.getRedOpponent().toStruct()
+            }
+        }
     }
 
     /**
@@ -1001,6 +1143,13 @@
             this[' score'] = 0
             this[' penalty'] = 0
             this.getPerson().reset()
+        },
+        toStruct: function () {
+            return {
+                score: this.getScore(),
+                shido: this.getShido(),
+                personUUID: this.getPerson().getUUID()
+            }
         }
     }
 
@@ -1218,11 +1367,13 @@
      * @param   {String} firstName
      * @param   {String} lastName
      * @param   {String} club
+     * @param   {String} forcedUUID
      */
-    function Person (firstName, lastName, club) {
+    function Person (firstName, lastName, club, forcedUUID) {
         this[' firstName'] = firstName
         this[' lastName']  = lastName
         this[' club']      = club
+        this[' uuid']      = forcedUUID || uuid()
     }
 
     Person.prototype = {
@@ -1246,8 +1397,12 @@
             (typeof this[' lockout'] !== 'undefined') && this[' lockout'].stop()
             delete this[' lockout']
         },
+        getUUID: function () {
+            return this[' uuid']
+        },
         toStruct: function () {
             return {
+                uuid: this[' uuid'],
                 firstName: this[' firstName'],
                 lastName: this[' lastName'],
                 club: this[' club']
@@ -1521,7 +1676,20 @@
         prev:      _prev,
         reset:     _reset,
         remove:    _remove,
-        getLength: function () { return this[' length'] }
+        getLength: function () { return this[' length'] },
+        toStruct:  function () {
+            var fight
+            var mem = this[' cursor']
+            var entries = []
+
+            this.reset()
+            while (fight = this.next()) {
+                entries.push(fight.toStruct())
+            }
+            this[' cursor'] = mem
+
+            return entries
+        }
     }
 
         /**
@@ -3766,9 +3934,24 @@
         toStruct: function () {
             return {
                 name: this[' name'],
+                playlist: this[' playlist'].toStruct(),
                 groups: this[' groups'].map(function (group) {
                     return group.toStruct()
-                })
+                }),
+                persons: function () {
+                    var persons = {}
+                    this[' groups']
+                        .reduce(function (persons, group) {
+                            return persons.concat(group.getPersons().map(function (person) {
+                                return [person.getUUID(), person.toStruct()]
+                            }))
+                        }, [])
+                        .forEach(function (tuple) {
+                            persons[tuple[0]] = tuple[1]
+                        })
+
+                    return persons
+                }.call(this)
             }
         }
     }

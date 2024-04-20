@@ -141,6 +141,13 @@
             this[' score'] = 0
             this[' penalty'] = 0
             this.getPerson().reset()
+        },
+        toStruct: function () {
+            return {
+                score: this.getScore(),
+                shido: this.getShido(),
+                personUUID: this.getPerson().getUUID()
+            }
         }
     }
 

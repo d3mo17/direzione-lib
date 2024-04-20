@@ -16,7 +16,8 @@
   "browser": "dist/direzione-lib.min.js",
   "dependencies": {
     "durata": "^1.6.0",
-    "peerjs": "^1.5.1"
+    "peerjs": "^1.5.1",
+    "uuid-random": "^1.3.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",
