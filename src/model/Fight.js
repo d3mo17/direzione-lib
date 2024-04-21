@@ -101,6 +101,7 @@
         getWhiteOpponent: function () { return this[' whiteOpponent'] },
         getRedOpponent:   function () { return this[' redOpponent'] },
         getTimeLeft:      _getTimeLeft,
+        setTimeLeft:      _setTimeLeft,
         isRunning:        _isRunning,
         isStopped:        function () { return this[' stopped'] },
         invertSide:       _invertSide,
@@ -221,6 +222,22 @@
      */
     function _getTimeLeft() {
         return _countdownExists.call(this) ? this[' countdown'].get() : this[' settings'].getDuration()
+    }
+
+    /**
+     * Sets the remaining milliseconds for the fight until end
+     *
+     * @method  Fight#getTimeLeft
+     * @param   {Integer} milliseconds
+     * @private
+     */
+    function _setTimeLeft(milliseconds) {
+        !_countdownExists.call(this) && _newCountDown.call(this)
+
+        this[' countdown'].pause('setTimeLeft')
+        this[' countdown'][' downTime'] = this[' countdown'][' duration'] - milliseconds
+
+        return this
     }
 
     /**
