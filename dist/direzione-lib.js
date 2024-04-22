@@ -1485,10 +1485,11 @@
          * @param   {String} firstName
          * @param   {String} lastName
          * @param   {String} club
+         * @param   {String} forcedUUID
          * @returns {Person}
          */
-        create: function (firstName, lastName, club) {
-            return new Person(firstName, lastName, club);
+        create: function (firstName, lastName, club, forcedUUID) {
+            return new Person(firstName, lastName, club, forcedUUID);
         },
         isInstance: function (obj) {
             return obj instanceof Person
