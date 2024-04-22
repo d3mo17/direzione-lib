@@ -117,6 +117,8 @@
         this[' groups']    = []
         this[' playlist']  = Playlist.create()
         this[' fightSettings'] = fightSettings
+
+        this[' listener'] = { repose: [] }
     }
     Tournament.prototype = {
         addFight: _addFight,
@@ -124,11 +126,13 @@
             this[' groups'].push(group)
             return this
         },
+        on: _registerEventListener,
         build: _build,
         setGroups: function (groups) {
             this[' groups'] = groups
             return this
         },
+        getName: function () { return this[' name'] },
         setName: function (name) {
             this[' name'] = name
             return this
@@ -174,21 +178,7 @@
             playlist: this[' playlist'].toStruct(),
             groups: this[' groups'].map(function (group) {
                 return group.toStruct()
-            }),
-            persons: function () {
-                var persons = {}
-                this[' groups']
-                    .reduce(function (persons, group) {
-                        return persons.concat(group.getPersons().map(function (person) {
-                            return [person.getUUID(), person.toStruct()]
-                        }))
-                    }, [])
-                    .forEach(function (tuple) {
-                        persons[tuple[0]] = tuple[1]
-                    })
-
-                return persons
-            }.call(this)
+            })
         }
     }
 
@@ -209,8 +199,55 @@
             Opponent.create(redOpponentPerson)
         )
 
-        this[' playlist'].insert(fight.on('timeUp', _playSound.bind(this)))
+        this[' playlist'].insert(
+            fight
+                .on('timeUp', function(fight) {
+                    _playSound.call(this)
+                    _dispatch.call(this, 'repose', ['timeUp', fight])
+                }.bind(this, fight))
+                .on('startPauseResume', function (fight) {
+                    ! fight.isRunning() && _dispatch.call(this, 'repose', ['pause', fight])
+                }.bind(this, fight))
+                .on('stop', function(fight) {
+                    _dispatch.call(this, 'repose', ['stop', fight])
+                }.bind(this, fight))
+        )
+
         return fight
+    }
+
+    /**
+     * Registers an event-listener to this object
+     *
+     * @method  Fight#on
+     * @param   {String} type
+     * @param   {Function} callback
+     * @private
+     */
+    function _registerEventListener(type, callback) {
+        var eventTypes = Object.keys(this[' listener'])
+        if (eventTypes.indexOf(type) === -1) {
+            throw new RangeError(
+                'Only following values are allowed for event type: ' + eventTypes.join(', ') + '!'
+            )
+        }
+
+        this[' listener'][type].push(callback)
+
+        return this
+    }
+
+    /**
+     * Notifies all listeners of passed event-type.
+     *
+     * @private
+     * @param {String} type
+     * @param {*} data
+     */
+    function _dispatch(type, data) {
+        this[' listener'][type].forEach(function (listener) {
+            listener.call(this, data)
+        }, this)
     }
 
     // Module-API
